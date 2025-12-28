@@ -354,6 +354,37 @@
             flex-direction: column;
             justify-content: flex-end;
             padding: 0;
+            position: relative;
+            /* Needed for tooltip positioning */
+            cursor: pointer;
+        }
+
+        /* Copy Tooltip */
+        .copy-tooltip {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+            font-weight: 500;
+            z-index: 20;
+            margin-top: 10px;
+        }
+
+        .copy-tooltip.visible {
+            opacity: 1;
+            margin-top: 0;
         }
 
         #display {
@@ -561,32 +592,212 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Floating toggle button */
-        .help-toggle-float {
+        /* Top Left Controls Wrapper */
+        .top-left-controls {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: var(--primary-accent);
-            border: none;
-            color: white;
-            padding: 12px 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1001;
+            /* Above Help Panel */
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .top-left-controls.panel-open-state {
+            /* Slide to the right side of the help panel (approx 800px width - container width - padding) */
+            /* Using a calculation to stick it near the edge for desktop */
+            transform: translateX(610px);
+        }
+
+        /* Generic Ghost Button Style */
+        .ghost-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            padding: 10px 16px;
             font-size: 0.9rem;
             cursor: pointer;
             border-radius: 12px;
             transition: all 0.2s;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            z-index: 10;
-            box-shadow: 0 4px 12px rgba(58, 125, 255, 0.3);
+            font-weight: 500;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .help-toggle-float:hover {
-            background: #4A8DFF;
+        .ghost-btn:hover {
+            background: var(--primary-accent);
+            color: white;
+            border-color: transparent;
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(58, 125, 255, 0.4);
+            box-shadow: 0 6px 16px rgba(58, 125, 255, 0.3);
         }
 
-        .help-toggle-float.hidden {
+        .ghost-btn svg {
+            fill: currentColor;
+            width: 16px;
+            height: 16px;
+        }
+
+        .icon-btn {
+            padding: 10px;
+        }
+
+        /* Danger Ghost Button (Red on Hover) */
+        .btn-ghost-danger {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: #888;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-ghost-danger:hover {
+            background: rgba(207, 53, 46, 0.1);
+            border-color: #cf352e;
+            color: #cf352e;
+            box-shadow: 0 4px 12px rgba(207, 53, 46, 0.2);
+        }
+
+        /* Settings Modal */
+        .settings-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 320px;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            opacity: 1;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .settings-modal.hidden {
+            display: none;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .settings-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+        }
+
+        .settings-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ccc;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: background 0.2s;
+        }
+
+        .settings-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-label {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        /* iOS Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #3a3a3a;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked+.slider {
+            background-color: var(--secondary-accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 90;
+        }
+
+        .modal-overlay.hidden {
             display: none;
         }
 
@@ -611,19 +822,6 @@
         }
 
         @media (max-width: 1200px) {
-            .help-panel {
-                width: 40vw;
-                max-width: 600px;
-            }
-
-            .workspace {
-                margin-left: 0;
-            }
-
-            .help-panel:not(.hidden)~.workspace {
-                margin-left: 40vw;
-            }
-
             .center-group {
                 flex-direction: column;
                 align-items: center;
@@ -702,11 +900,11 @@
     <!-- Left Sidebar - Help Panel -->
     <div class="help-panel hidden" id="helpPanel">
         <div class="help-header">
-            <h3>HELP / RULES</h3>
-            <div style="display: flex; gap: 10px;">
-                <button class="toggle-help-btn" onclick="resetTableToDefaults()">Default</button>
-                <button class="toggle-help-btn" onclick="toggleHelpPanel()">Hide</button>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <h3>HELP / RULES</h3>
+                <button class="btn-ghost-danger" onclick="resetTableToDefaults()">Default</button>
             </div>
+            <!-- Hide button removed, floating control handles it -->
         </div>
         <div class="help-content">
             <table class="partners-table">
@@ -843,7 +1041,8 @@
             <div class="calculator-column">
                 <h1 class="app-title">LetsExchange</h1>
                 <div class="calculator">
-                    <div class="display-container">
+                    <div class="display-container" id="displayContainer">
+                        <div id="copyTooltip" class="copy-tooltip">Copied!</div>
                         <input type="text" id="display" placeholder="0" autocomplete="off" autofocus>
                     </div>
 
@@ -887,7 +1086,37 @@
         </div>
     </div>
 
-    <button class="help-toggle-float" id="helpToggleFloat" onclick="toggleHelpPanel()">Show Help</button>
+    <!-- Top Left Controls (Show Help/Settings) -->
+    <div class="top-left-controls" id="floatingControls">
+        <button class="ghost-btn icon-btn" id="settingsToggle" onclick="toggleSettingsModal()">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+            </svg>
+        </button>
+        <button class="ghost-btn" id="helpToggleFloat" onclick="toggleHelpPanel()">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+            </svg>
+            <span id="helpToggleText">Show Help</span>
+        </button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay hidden" id="modalOverlay" onclick="toggleSettingsModal()"></div>
+    <div class="settings-modal hidden" id="settingsModal">
+        <div class="settings-header">
+            <h2 class="settings-title">Settings</h2>
+            <button class="settings-close" onclick="toggleSettingsModal()">×</button>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">Auto-Copy on Click</span>
+            <label class="switch">
+                <input type="checkbox" id="autoCopyToggle" checked onchange="toggleAutoCopy(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
 
     <script>
         const display = document.getElementById('display');
@@ -1294,14 +1523,19 @@
 
         function toggleHelpPanel() {
             const helpPanel = document.getElementById('helpPanel');
-            const toggleBtn = helpPanel.querySelector('.toggle-help-btn');
-            const floatBtn = document.getElementById('helpToggleFloat');
+            const floatingControls = document.getElementById('floatingControls');
+            const toggleText = document.getElementById('helpToggleText');
 
             helpPanel.classList.toggle('hidden');
             const isHidden = helpPanel.classList.contains('hidden');
 
-            toggleBtn.textContent = isHidden ? 'Show' : 'Default';
-            floatBtn.classList.toggle('hidden', !isHidden);
+            if (isHidden) {
+                toggleText.textContent = 'Show Help';
+                floatingControls.classList.remove('panel-open-state');
+            } else {
+                toggleText.textContent = 'Hide';
+                floatingControls.classList.add('panel-open-state');
+            }
         }
 
         function addToHistory(expression, result) {
@@ -1349,6 +1583,54 @@
         window.addEventListener('load', () => {
             display.focus();
         });
+
+        // Click to Copy Logic
+        const displayContainer = document.getElementById('displayContainer');
+        const tooltip = document.getElementById('copyTooltip');
+        const autoCopyToggleEl = document.getElementById('autoCopyToggle');
+
+        let tooltipTimeout;
+        let isAutoCopyEnabled = JSON.parse(localStorage.getItem('calcAutoCopy'));
+        if (isAutoCopyEnabled === null) isAutoCopyEnabled = false; // Default false
+
+        // Init toggle state
+        autoCopyToggleEl.checked = isAutoCopyEnabled;
+
+        displayContainer.addEventListener('click', () => {
+            if (!isAutoCopyEnabled) return;
+
+            const textToCopy = display.value;
+            if (!textToCopy) return;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Show Tooltip
+                tooltip.classList.add('visible');
+
+                // Reset timer if clicked again quickly
+                if (tooltipTimeout) clearTimeout(tooltipTimeout);
+
+                tooltipTimeout = setTimeout(() => {
+                    tooltip.classList.remove('visible');
+                }, 1500);
+
+                // Ensure focus remains for typing
+                display.focus();
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        });
+
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            const overlay = document.getElementById('modalOverlay');
+            modal.classList.toggle('hidden');
+            overlay.classList.toggle('hidden');
+        }
+
+        function toggleAutoCopy(checkbox) {
+            isAutoCopyEnabled = checkbox.checked;
+            localStorage.setItem('calcAutoCopy', JSON.stringify(isAutoCopyEnabled));
+        }
     </script>
 
 </body>
