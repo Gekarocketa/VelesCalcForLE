@@ -25,7 +25,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Roboto Mono', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -55,14 +55,16 @@
             top: 0;
             height: 100vh;
             width: 800px;
-            background: var(--card-bg);
-            border-right: 1px solid var(--border-color);
+            background: rgba(30, 30, 30, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
             padding: 24px;
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
             z-index: 10;
-            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
         }
 
         .help-panel.hidden {
@@ -327,13 +329,16 @@
         }
 
         /* Calculator - Fixed Width */
+        /* Calculator - Fixed Width */
         .calculator {
-            background: var(--card-bg);
+            background: rgba(30, 30, 30, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             padding: 30px;
             border-radius: 24px;
             width: 650px;
             flex-shrink: 0;
-            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border-color);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.08);
             display: flex;
             flex-direction: column;
         }
@@ -360,13 +365,14 @@
             text-align: right;
             outline: none;
             padding: 0 15px 10px 15px;
-            font-family: 'Roboto Mono', monospace;
+            font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
             font-weight: 500;
-            transition: border-color 0.2s;
+            transition: all 0.2s;
         }
 
         #display:focus {
-            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 4px rgba(58, 125, 255, 0.25);
+            border-color: transparent;
         }
 
         .buttons {
@@ -376,7 +382,7 @@
         }
 
         button {
-            background: var(--btn-bg);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--btn-bg);
             border: none;
             color: white;
             font-size: 1.3rem;
@@ -385,7 +391,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
-            font-family: 'Inter', 'Roboto Mono', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
             font-weight: 500;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
@@ -402,7 +408,7 @@
         }
 
         .btn-operation {
-            background: var(--primary-accent);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--primary-accent);
             color: white;
             font-weight: 600;
         }
@@ -412,7 +418,7 @@
         }
 
         .btn-equals {
-            background: var(--secondary-accent);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--secondary-accent);
             color: #121212;
             font-weight: 700;
         }
@@ -422,7 +428,7 @@
         }
 
         .btn-red {
-            background: #cf352e;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), #cf352e;
             color: white;
         }
 
@@ -431,7 +437,7 @@
         }
 
         .btn-func {
-            background: #3a3a3a;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), #3a3a3a;
         }
 
         .btn-func:hover {
@@ -444,7 +450,9 @@
 
         /* History Panel */
         .history-panel {
-            background: var(--card-bg);
+            background: rgba(30, 30, 30, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 24px;
             width: 520px;
@@ -453,7 +461,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 20px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border-color);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.08);
         }
 
         .history-header {
@@ -522,13 +530,13 @@
             font-size: 0.95em;
             color: #fff;
             font-weight: 500;
-            font-family: 'Roboto Mono', monospace;
+            font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
         }
 
         .history-res {
             color: var(--secondary-accent);
             font-weight: 700;
-            font-family: 'Roboto Mono', monospace;
+            font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
         }
 
         .history-meta {
@@ -583,23 +591,22 @@
 
         /* Скроллбар */
         ::-webkit-scrollbar {
-            width: 16px;
+            width: 6px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #1e1e1e;
-            border-radius: 4px;
+            background: transparent;
             margin-top: 4px;
             margin-bottom: 4px;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 100px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: rgba(255, 255, 255, 0.4);
         }
 
         @media (max-width: 1200px) {
@@ -1343,4 +1350,3 @@
 </body>
 
 </html>
-
