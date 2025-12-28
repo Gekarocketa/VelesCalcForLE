@@ -9,8 +9,9 @@
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
     <style>
         :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
+            /* Default Dark Theme */
+            --bg-color: #000000;
+            --card-bg: rgba(30, 30, 30, 0.75);
             --text-color: #ffffff;
             --primary-accent: #3A7DFF;
             --secondary-accent: #2CD4A7;
@@ -18,6 +19,7 @@
             --btn-hover: #3a3a3a;
             --error-color: #ff4d4d;
             --border-color: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.5);
         }
 
         * {
@@ -55,14 +57,15 @@
             top: 0;
             height: 100vh;
             width: 800px;
-            background: rgba(30, 30, 30, 0.75);
+            background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid var(--border-color);
             padding: 24px;
             display: flex;
             flex-direction: column;
             transition: transform 0.3s ease;
+            z-index: 10;
             z-index: 10;
             box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
         }
@@ -200,7 +203,8 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid #333;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .partners-table th.text-center {
@@ -243,7 +247,7 @@
 
         .partners-table td {
             padding: 12px 8px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
             color: var(--text-color);
             vertical-align: middle;
         }
@@ -331,14 +335,14 @@
         /* Calculator - Fixed Width */
         /* Calculator - Fixed Width */
         .calculator {
-            background: rgba(30, 30, 30, 0.75);
+            background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 30px;
             border-radius: 24px;
             width: 650px;
             flex-shrink: 0;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2), 0 0 1px 1px var(--border-color);
             display: flex;
             flex-direction: column;
         }
@@ -346,7 +350,7 @@
         .display-container {
             width: 100%;
             height: 60px;
-            background: #0f0f0f;
+            background: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             margin-bottom: 24px;
@@ -413,10 +417,11 @@
             gap: 12px;
         }
 
+        /* Button Defaults (Theme Dependent) */
         button {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--btn-bg);
             border: none;
-            color: white;
+            color: var(--text-color);
             font-size: 1.3rem;
             padding: 22px;
             border-radius: 16px;
@@ -430,8 +435,6 @@
 
         button:hover {
             background: var(--btn-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
         button:active {
@@ -439,24 +442,20 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
+        /* Default Operations (Theme Dependent for BG, Text is typically white or contrast) */
         .btn-operation {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--primary-accent);
             color: white;
             font-weight: 600;
         }
 
-        .btn-operation:hover {
-            background: #4A8DFF;
-        }
+        /* Specific overrides for Light Theme Default Operations if needed, but var(--primary-accent) handles it */
 
         .btn-equals {
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--secondary-accent);
-            color: #121212;
+            color: white;
+            /* Made white for better contrast in general */
             font-weight: 700;
-        }
-
-        .btn-equals:hover {
-            background: #3DE5B8;
         }
 
         .btn-red {
@@ -464,25 +463,76 @@
             color: white;
         }
 
-        .btn-red:hover {
-            background: #e03d35;
-        }
-
         .btn-func {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), #3a3a3a;
-        }
-
-        .btn-func:hover {
-            background: #4a4a4a;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%), var(--btn-bg);
+            /* Slightly simpler for func buttons to match number buttons in default style or use specific gray */
+            filter: brightness(1.2);
+            /* Just a bit lighter than numbers */
         }
 
         .span-2 {
             grid-column: span 2;
         }
 
+        /* --- MAC BUTTON STYLE OVERRIDES --- */
+
+        /* Scope specifically to the calculator grid to avoid breaking other buttons */
+        [data-btn-style="mac"] .calculator .buttons button {
+            transition: all 0.2s ease;
+            /* Ensure transitions exist */
+        }
+
+        /* 1. Operations are always Orange */
+        [data-btn-style="mac"] .calculator .btn-operation,
+        [data-btn-style="mac"] .calculator .btn-equals {
+            background: #FF9F0A !important;
+            color: white !important;
+        }
+
+        [data-btn-style="mac"] .calculator .btn-operation:hover,
+        [data-btn-style="mac"] .calculator .btn-equals:hover {
+            background: #ffb84d !important;
+            /* Brighter orange */
+        }
+
+        /* 2. Top Row (AC, DEL, %) */
+        [data-btn-style="mac"] .calculator .btn-red,
+        [data-btn-style="mac"] .calculator .btn-func {
+            background: #A5A5A5 !important;
+            color: black !important;
+        }
+
+        [data-btn-style="mac"] .calculator .btn-red:hover,
+        [data-btn-style="mac"] .calculator .btn-func:hover {
+            background: #d4d4d2 !important;
+            /* Lighter gray */
+        }
+
+        /* 3. Number Buttons (Mac Dark Mode) */
+        /* Scope to buttons inside .calculator that are NOT special classes */
+        [data-btn-style="mac"] .calculator button:not(.btn-operation):not(.btn-equals):not(.btn-red):not(.btn-func) {
+            background: #333333 !important;
+            color: white !important;
+        }
+
+        [data-btn-style="mac"] .calculator button:not(.btn-operation):not(.btn-equals):not(.btn-red):not(.btn-func):hover {
+            background: #4d4d4d !important;
+            /* Lighter dark gray */
+        }
+
+        /* 4. History Colors (Orange Accents for Mac) */
+        [data-btn-style="mac"] .history-res {
+            color: #FF9F0A;
+        }
+
+        [data-btn-style="mac"] .history-item:hover {
+            border-bottom-color: rgba(255, 159, 10, 0.3);
+            background: rgba(255, 159, 10, 0.1);
+        }
+
         /* History Panel */
         .history-panel {
-            background: rgba(30, 30, 30, 0.75);
+            background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
@@ -676,12 +726,12 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 320px;
-            background: rgba(30, 30, 30, 0.85);
+            background: var(--card-bg);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-radius: 20px;
             padding: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
             z-index: 100;
             opacity: 1;
@@ -703,14 +753,14 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
-            color: white;
+            color: var(--text-color);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
         }
 
         .settings-close {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--btn-bg);
             border: none;
-            color: #ccc;
+            color: var(--text-color);
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -723,8 +773,8 @@
         }
 
         .settings-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            background: var(--btn-hover);
+            color: var(--text-color);
         }
 
         .settings-row {
@@ -736,7 +786,18 @@
 
         .settings-label {
             font-size: 1rem;
-            color: #ccc;
+            color: var(--text-color);
+        }
+
+        .settings-select {
+            background: var(--btn-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            font-family: inherit;
         }
 
         /* iOS Switch */
@@ -1091,7 +1152,7 @@
         <button class="ghost-btn icon-btn" id="settingsToggle" onclick="toggleSettingsModal()">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
-                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23-.41-.12-.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
             </svg>
         </button>
         <button class="ghost-btn" id="helpToggleFloat" onclick="toggleHelpPanel()">
@@ -1108,6 +1169,13 @@
         <div class="settings-header">
             <h2 class="settings-title">Settings</h2>
             <button class="settings-close" onclick="toggleSettingsModal()">×</button>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">Mac Button Style</span>
+            <label class="switch">
+                <input type="checkbox" id="macButtonsToggle" onchange="toggleMacButtons(this)">
+                <span class="slider"></span>
+            </label>
         </div>
         <div class="settings-row">
             <span class="settings-label">Auto-Copy on Click</span>
@@ -1616,19 +1684,52 @@
 
         window.addEventListener('load', () => {
             display.focus();
+
+            // Init UI elements based on state
+            const autoCopyToggleEl = document.getElementById('autoCopyToggle');
+            const macButtonsToggleEl = document.getElementById('macButtonsToggle');
+
+            if (autoCopyToggleEl) autoCopyToggleEl.checked = isAutoCopyEnabled;
+            if (macButtonsToggleEl) macButtonsToggleEl.checked = isMacButtons;
+
+            applySettings();
         });
+
+        // -- Settings State Management --
+        let isAutoCopyEnabled = JSON.parse(localStorage.getItem('calcAutoCopy'));
+        if (isAutoCopyEnabled === null) isAutoCopyEnabled = false;
+
+        let isMacButtons = JSON.parse(localStorage.getItem('calcMacButtons'));
+        if (isMacButtons === null) isMacButtons = false;
+
+        function applySettings() {
+            document.body.setAttribute('data-btn-style', isMacButtons ? 'mac' : 'default');
+        }
+
+        // Global Event Handlers for Settings (must be global for onclick)
+        function toggleMacButtons(checkbox) {
+            isMacButtons = checkbox.checked;
+            localStorage.setItem('calcMacButtons', JSON.stringify(isMacButtons));
+            applySettings();
+        }
+
+        function toggleAutoCopy(checkbox) {
+            isAutoCopyEnabled = checkbox.checked;
+            localStorage.setItem('calcAutoCopy', JSON.stringify(isAutoCopyEnabled));
+        }
+
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            const overlay = document.getElementById('modalOverlay');
+            modal.classList.toggle('hidden');
+            overlay.classList.toggle('hidden');
+        }
+        // -- End Settings State --
 
         // Click to Copy Logic
         const displayContainer = document.getElementById('displayContainer');
         const tooltip = document.getElementById('copyTooltip');
-        const autoCopyToggleEl = document.getElementById('autoCopyToggle');
-
         let tooltipTimeout;
-        let isAutoCopyEnabled = JSON.parse(localStorage.getItem('calcAutoCopy'));
-        if (isAutoCopyEnabled === null) isAutoCopyEnabled = false; // Default false
-
-        // Init toggle state
-        autoCopyToggleEl.checked = isAutoCopyEnabled;
 
         displayContainer.addEventListener('click', () => {
             if (!isAutoCopyEnabled) return;
@@ -1653,18 +1754,6 @@
                 console.error('Failed to copy: ', err);
             });
         });
-
-        function toggleSettingsModal() {
-            const modal = document.getElementById('settingsModal');
-            const overlay = document.getElementById('modalOverlay');
-            modal.classList.toggle('hidden');
-            overlay.classList.toggle('hidden');
-        }
-
-        function toggleAutoCopy(checkbox) {
-            isAutoCopyEnabled = checkbox.checked;
-            localStorage.setItem('calcAutoCopy', JSON.stringify(isAutoCopyEnabled));
-        }
     </script>
 
 </body>
