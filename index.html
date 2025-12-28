@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LetsExchange - Crypto Calculator</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💱</text></svg>">
     <style>
         :root {
             --bg-color: #121212;
@@ -1131,10 +1133,24 @@
         // Initialize table on load
         loadTableData();
 
+        // Helper to focus and move caret to end
+        function focusAndMoveCursorToEnd() {
+            display.focus();
+            // Use setTimeout to ensure focus happens after any default browser behavior
+            setTimeout(() => {
+                const len = display.value.length;
+                display.setSelectionRange(len, len);
+            }, 0);
+        }
+
         display.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 calculate();
+            }
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                deleteLast();
             }
         });
 
@@ -1144,10 +1160,17 @@
             } else {
                 display.value += symbol;
             }
+            focusAndMoveCursorToEnd();
         }
 
-        function clearDisplay() { display.value = ''; }
-        function deleteLast() { display.value = display.value.slice(0, -1); }
+        function clearDisplay() {
+            display.value = '';
+            focusAndMoveCursorToEnd();
+        }
+        function deleteLast() {
+            display.value = display.value.slice(0, -1);
+            focusAndMoveCursorToEnd();
+        }
 
         function parseCryptoNumber(numStr) {
             let clean = numStr.trim().replace(/\s/g, '');
@@ -1206,6 +1229,7 @@
                 addToHistory(rawInput, formattedResult);
 
                 display.value = formattedResult;
+                focusAndMoveCursorToEnd();
             } catch (e) {
                 const originalVal = display.value;
                 display.value = 'ERROR';
@@ -1213,6 +1237,7 @@
                 setTimeout(() => {
                     display.value = originalVal;
                     display.style.color = 'var(--text-color)';
+                    focusAndMoveCursorToEnd();
                 }, 1000);
             }
         }
