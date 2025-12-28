@@ -882,7 +882,274 @@
             background: rgba(255, 255, 255, 0.4);
         }
 
+        /* --- Pro Features (Header & Widget) --- */
+
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 650px;
+            /* Match calculator width */
+            margin-bottom: 20px;
+            position: relative;
+            height: 50px;
+            /* Fixed height to anchor items */
+        }
+
+        .header-controls.hidden {
+            display: none;
+        }
+
+        /* Center Title Absolute Positioning */
+        .header-controls .app-title {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .header-left,
+        .header-right {
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+            /* Approx above title if needed */
+        }
+
+        .header-left button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: #888;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .header-left button:hover {
+            background: var(--primary-accent);
+            color: white;
+            border-color: transparent;
+        }
+
+        .btn-delta-header {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: #FF9F0A;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-delta-header:hover {
+            background: rgba(255, 159, 10, 0.1);
+            border-color: #FF9F0A;
+            transform: scale(1.05);
+        }
+
+        .btn-delta-header.active {
+            background: #FF9F0A;
+            color: white;
+            box-shadow: 0 0 12px rgba(255, 159, 10, 0.5);
+        }
+
+        /* History Container (Narrow) */
+        .history-container {
+            display: flex;
+            gap: 16px;
+            width: 520px;
+            /* Default width */
+            transition: width 0.3s ease;
+        }
+
+        .history-container.expanded {
+            width: 560px;
+            /* Slightly wider when BTC widget is open */
+        }
+
+        .history-panel {
+            flex: 1;
+            transition: all 0.3s ease;
+            min-width: 0;
+            /* Allow Flex Shrink */
+        }
+
+        /* Specific override when widget is visible */
+        .history-container.expanded .history-panel {
+            width: 240px;
+            /* Target ~240px */
+            flex: none;
+            /* Fixed width */
+        }
+
+        /* Ensure History Text Wraps */
+        .history-expr {
+            white-space: normal;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .history-res {
+            white-space: normal;
+            word-break: break-all;
+        }
+
+        /* BTC Widget */
+        .btc-widget {
+            width: 280px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: translateX(-20px);
+            pointer-events: none;
+            display: none;
+        }
+
+        .btc-widget.visible {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            animation: slideInRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .btc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        /* Small Icon Buttons in Widget Header */
+        .icon-btn-small {
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn-small:hover {
+            color: var(--text-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .icon-btn-small svg {
+            display: block;
+        }
+
+
+        .btc-icon {
+            font-size: 1.5rem;
+            color: #F7931A;
+            /* Bitcoin Orange */
+        }
+
+        .btc-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .btc-price-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2CD4A7;
+            /* Green for price */
+            text-align: center;
+            font-family: "SF Mono", "Menlo", monospace;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .btc-converter {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btc-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .btc-input-group label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .btc-converter input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .btc-converter input:focus {
+            border-color: var(--primary-accent);
+        }
+
+        .btc-toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btc-toggle-btn:hover {
+            background: var(--primary-accent);
+            color: white;
+        }
+
+        .btc-result {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #F7931A;
+            margin-top: 5px;
+            min-height: 1.5em;
+            /* Prevent jump */
+        }
+
+        /* Updated Media Queries for new layout */
         @media (max-width: 1200px) {
+
             .center-group {
                 flex-direction: column;
                 align-items: center;
@@ -1101,6 +1368,18 @@
             <!-- Calculator Column -->
             <div class="calculator-column">
                 <h1 class="app-title">LetsExchange</h1>
+
+                <!-- Header Controls (Quick Fees & Delta) -->
+                <div class="header-controls hidden" id="headerControls">
+                    <div class="header-left">
+                        <button class="ghost-btn icon-btn" onclick="applyQuickFee(-0.1)">-0.1%</button>
+                        <button class="ghost-btn icon-btn" onclick="applyQuickFee(0.1)">+0.1%</button>
+                    </div>
+                    <div class="header-right">
+                        <button class="btn-delta-header" onclick="toggleDeltaMode()">Δ</button>
+                    </div>
+                </div>
+
                 <div class="calculator">
                     <div class="display-container" id="displayContainer">
                         <div id="copyTooltip" class="copy-tooltip">Copied!</div>
@@ -1136,13 +1415,64 @@
             </div>
 
             <!-- History Panel -->
-            <div class="history-panel">
-                <div class="history-header">
-                    <h3>HISTORY</h3>
-                    <button onclick="clearHistory()">Clear All</button>
+            <!-- History Area Container -->
+            <div class="history-container">
+                <!-- History Panel -->
+                <div class="history-panel" id="historyPanel">
+                    <div class="history-header">
+                        <h3>HISTORY</h3>
+                        <button onclick="clearHistory()">Clear All</button>
+                    </div>
+                    <div class="history-hint">Click on a row to edit formula</div>
+                    <ul class="history-list" id="historyList"></ul>
                 </div>
-                <div class="history-hint">Click on a row to edit formula</div>
-                <ul class="history-list" id="historyList"></ul>
+
+                <!-- BTC Widget (Hidden by default) -->
+                <div class="btc-widget hidden" id="btcWidget">
+                    <div class="btc-header">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="btc-icon">₿</span>
+                            <span class="btc-title">BTC Converter</span>
+                        </div>
+                        <div class="btc-controls">
+                            <button class="icon-btn-small" onclick="refreshBtcPrice()" title="Refresh Price">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                                    fill="none">
+                                    <path d="M23 4v6h-6"></path>
+                                    <path d="M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                                    </path>
+                                </svg>
+                            </button>
+                            <button class="icon-btn-small" onclick="toggleBtcLock()" id="btcLockBtn"
+                                title="Lock Auto-Update">
+                                <!-- Default: Open Lock (Auto-Update ON) -->
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                                    fill="none">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="btc-price-display" id="btcPriceDisplay">Loading...</div>
+                    <div class="btc-converter">
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                            <label class="btc-label" id="btcInputLabel">Amount (BTC)</label>
+                            <button class="settings-toggle-btn" onclick="toggleSatsMode()" id="satsModeBtn"
+                                style="font-size:0.75rem; padding: 2px 8px;">Mode: BTC</button>
+                        </div>
+                        <div class="btc-input-group">
+                            <input type="text" id="btcInput" placeholder="0.00">
+                        </div>
+
+                        <div class="btc-input-group" style="margin-top: 10px;">
+                            <label class="btc-label">Value (USDT)</label>
+                            <input type="text" id="usdtInput" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1181,6 +1511,13 @@
             <span class="settings-label">Auto-Copy on Click</span>
             <label class="switch">
                 <input type="checkbox" id="autoCopyToggle" checked onchange="toggleAutoCopy(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="settings-row">
+            <span class="settings-label">Pro Features</span>
+            <label class="switch">
+                <input type="checkbox" id="proFeaturesToggle" onchange="toggleProFeatures(this)">
                 <span class="slider"></span>
             </label>
         </div>
@@ -1754,6 +2091,306 @@
                 console.error('Failed to copy: ', err);
             });
         });
+
+        // --- Pro Features Logic ---
+
+        let isProFeaturesEnabled = JSON.parse(localStorage.getItem('calcProFeatures')) || false;
+        let deltaBaseValue = null; // Unused in new logic but kept for safety
+        let btcPrice = 0;
+        let btcFetchInterval;
+        let isBtcLocked = JSON.parse(localStorage.getItem('calcBtcLock')) || false;
+
+        function toggleProFeatures(checkbox) {
+            isProFeaturesEnabled = checkbox.checked;
+            localStorage.setItem('calcProFeatures', JSON.stringify(isProFeaturesEnabled));
+            applyProFeatures();
+        }
+
+        function applyProFeatures() {
+            const headerControls = document.getElementById('headerControls');
+            const btcWidget = document.getElementById('btcWidget');
+            const historyContainer = document.querySelector('.history-container');
+            const proToggle = document.getElementById('proFeaturesToggle');
+
+            if (proToggle) proToggle.checked = isProFeaturesEnabled;
+
+            if (isProFeaturesEnabled) {
+                headerControls.classList.remove('hidden');
+                btcWidget.classList.remove('hidden');
+
+                setTimeout(() => {
+                    btcWidget.classList.add('visible');
+                    historyContainer.classList.add('expanded');
+                }, 50);
+
+                if (!isBtcLocked) {
+                    startBtcPolling();
+                } else {
+                    if (btcPrice === 0) fetchBtcPrice();
+                }
+            } else {
+                btcWidget.classList.remove('visible');
+                historyContainer.classList.remove('expanded');
+
+                setTimeout(() => {
+                    headerControls.classList.add('hidden');
+                    btcWidget.classList.add('hidden');
+                }, 300);
+
+                stopBtcPolling();
+            }
+            updateBtcLockIcon();
+            applyMacThemeToNewElements();
+        }
+
+        // Settings Listener for Theme Changes
+        // We need to hook into the global toggleMacButtons to re-apply theme to new elements
+        const originalToggleMac = toggleMacButtons;
+        toggleMacButtons = function (checkbox) {
+            originalToggleMac(checkbox);
+            applyMacThemeToNewElements();
+        };
+
+        function applyMacThemeToNewElements() {
+            const isMac = document.body.getAttribute('data-btn-style') === 'mac';
+            const btcDisplay = document.getElementById('btcPriceDisplay');
+            const deltaResults = document.querySelectorAll('.history-res-delta');
+            const deltaBtn = document.querySelector('.btn-delta-header');
+
+            if (isMac) {
+                if (btcDisplay) btcDisplay.style.color = '#FF9F0A';
+                if (deltaBtn) deltaBtn.style.color = '#FF9F0A';
+                deltaResults.forEach(el => el.style.color = '#FF9F0A');
+            } else {
+                if (btcDisplay) btcDisplay.style.color = '#2CD4A7'; // Default Green
+                if (deltaBtn) deltaBtn.style.color = '#FF9F0A'; // Keep orange for delta button itself? Or allow reset
+                deltaResults.forEach(el => el.style.color = ''); // Reset to CSS default
+            }
+        }
+
+        // Quick Fees
+        function applyQuickFee(percent) {
+            let currentVal = parseFloat(display.value);
+            if (isNaN(currentVal)) return;
+            let result = currentVal * (1 + percent / 100);
+            let formatted = formatResult(result);
+            addToHistory(`${currentVal} ${percent > 0 ? '+' : ''}${percent}%`, formatted);
+            display.value = formatted;
+            focusAndMoveCursorToEnd();
+        }
+
+        // Delta Operator Logic
+        function toggleDeltaMode() {
+            // New Behavior: Insert 'Δ' Symbol
+            inputSymbol('Δ');
+        }
+
+        // Override Calculate for Delta Operator
+        const originalCalculate = calculate;
+        calculate = function () {
+            let val = display.value;
+            if (val.includes('Δ')) {
+                // Parse: Left Δ Right
+                // "100Δ105"
+                const parts = val.split('Δ');
+                if (parts.length === 2) {
+                    const base = parseFloat(parts[0]);
+                    const target = parseFloat(parts[1]);
+
+                    if (!isNaN(base) && !isNaN(target)) {
+                        if (base === 0) {
+                            display.value = "Error";
+                            return;
+                        }
+
+                        let diff = target - base;
+                        let percentage = (diff / base) * 100;
+                        let sign = percentage >= 0 ? '+' : '';
+                        let resultStr = `${sign}${percentage.toFixed(2)}%`;
+
+                        // Custom History Entry
+                        const item = {
+                            expr: val,
+                            res: resultStr,
+                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                            isDelta: true
+                        };
+                        historyData.unshift(item);
+                        if (historyData.length > 30) historyData.pop();
+                        localStorage.setItem('cryptoCalcHistory', JSON.stringify(historyData));
+                        renderHistory();
+
+                        display.value = resultStr;
+                        return;
+                    }
+                }
+            }
+            originalCalculate();
+        };
+
+        // Update History Render to highlight Delta
+        const originalRenderHistory = renderHistory;
+        renderHistory = function () {
+            historyList.innerHTML = '';
+            historyData.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+
+                // Check if Delta result (either from flag or content)
+                const isDelta = item.isDelta || (typeof item.res === 'string' && item.res.includes('%') && (item.expr.includes('Δ') || item.expr.includes('Delta')));
+                const resClass = isDelta ? 'history-res history-res-delta' : 'history-res';
+
+                // Inline color style if Mac Theme is active
+                const isMac = document.body.getAttribute('data-btn-style') === 'mac';
+                const colorStyle = (isDelta && isMac) ? 'style="color: #FF9F0A"' : '';
+
+                li.innerHTML = `
+                <div style="display:flex; flex-direction:column; width:100%">
+                    <span class="history-expr" title="Click to edit formula">${item.expr}</span>
+                    <div class="history-meta">
+                        <span class="${resClass}" ${colorStyle}>= ${item.res}</span>
+                        <span class="history-time">${item.time}</span>
+                    </div>
+                </div>
+                `;
+                li.onclick = () => {
+                    display.value = item.expr;
+                    display.focus();
+                };
+                historyList.appendChild(li);
+            });
+        };
+
+        // BTC Bidirectional Converter
+        function startBtcPolling() {
+            if (btcFetchInterval) clearInterval(btcFetchInterval);
+            fetchBtcPrice();
+            btcFetchInterval = setInterval(fetchBtcPrice, 60000);
+        }
+
+        function stopBtcPolling() {
+            if (btcFetchInterval) clearInterval(btcFetchInterval);
+        }
+
+        function fetchBtcPrice() {
+            fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
+                .then(res => res.json())
+                .then(data => {
+                    btcPrice = parseFloat(data.price);
+                    document.getElementById('btcPriceDisplay').textContent = `$${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+                    // Update the OTHER field based on what's active or last edited?
+                    // Usually update USDT based on BTC if BTC has value, else inverse.
+                    // Let's rely on updateLogic
+                    if (document.activeElement === usdtInput) {
+                        convertFromUsdt();
+                    } else {
+                        convertFromBtc();
+                    }
+                    applyMacThemeToNewElements();
+                })
+                .catch(err => {
+                    console.error('Error', err);
+                });
+        }
+
+        const btcInput = document.getElementById('btcInput');
+        const usdtInput = document.getElementById('usdtInput');
+        let isSatsMode = false;
+
+        function toggleSatsMode() {
+            isSatsMode = !isSatsMode;
+            const btn = document.getElementById('satsModeBtn');
+            const label = document.getElementById('btcInputLabel');
+
+            if (isSatsMode) {
+                btn.textContent = 'Mode: Sats';
+                label.textContent = 'Amount (Sats)';
+
+                // Convert current value in BTC input to Sats
+                let val = parseFloat(btcInput.value);
+                if (!isNaN(val)) {
+                    btcInput.value = Math.round(val * 100000000);
+                }
+            } else {
+                btn.textContent = 'Mode: BTC';
+                label.textContent = 'Amount (BTC)';
+
+                // Convert current value in Sats input to BTC
+                let val = parseFloat(btcInput.value);
+                if (!isNaN(val)) {
+                    btcInput.value = (val / 100000000).toFixed(8).replace(/\.?0+$/, "");
+                }
+            }
+        }
+
+        function convertFromBtc() {
+            let val = parseFloat(btcInput.value);
+            if (isNaN(val)) {
+                usdtInput.value = '';
+                return;
+            }
+
+            let btcAmount = isSatsMode ? val / 100000000 : val;
+            let usdtVal = btcAmount * btcPrice;
+            usdtInput.value = usdtVal.toFixed(2);
+        }
+
+        function convertFromUsdt() {
+            let val = parseFloat(usdtInput.value);
+            if (isNaN(val)) {
+                btcInput.value = '';
+                return;
+            }
+
+            let btcAmount = val / btcPrice;
+            if (isSatsMode) {
+                btcInput.value = Math.round(btcAmount * 100000000);
+            } else {
+                btcInput.value = btcAmount.toFixed(8);
+            }
+        }
+
+        if (btcInput && usdtInput) {
+            btcInput.addEventListener('input', convertFromBtc);
+            usdtInput.addEventListener('input', convertFromUsdt);
+        }
+
+        // Lock Logic (Preserved)
+        function toggleBtcLock() {
+            isBtcLocked = !isBtcLocked;
+            localStorage.setItem('calcBtcLock', JSON.stringify(isBtcLocked));
+            updateBtcLockIcon();
+            if (isBtcLocked) stopBtcPolling();
+            else startBtcPolling();
+        }
+
+        function updateBtcLockIcon() {
+            const btn = document.getElementById('btcLockBtn');
+            if (!btn) return;
+            if (isBtcLocked) {
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+                btn.title = "Unlock Auto-Update";
+                btn.style.color = "#FF9F0A";
+            } else {
+                btn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
+                btn.title = "Lock Auto-Update";
+                btn.style.color = "inherit";
+            }
+        }
+
+        function refreshBtcPrice() {
+            fetchBtcPrice();
+            const btn = document.querySelector('button[onclick="refreshBtcPrice()"] svg');
+            if (btn) {
+                btn.style.transition = 'transform 0.5s';
+                btn.style.transform = 'rotate(360deg)';
+                setTimeout(() => btn.style.transform = 'none', 500);
+            }
+        }
+
+        // Initialize Pro Features
+        applyProFeatures();
     </script>
 
 </body>
