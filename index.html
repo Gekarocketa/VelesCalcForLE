@@ -844,7 +844,7 @@
                 <h1 class="app-title">LetsExchange</h1>
                 <div class="calculator">
                     <div class="display-container">
-                        <input type="text" id="display" placeholder="0" autocomplete="off">
+                        <input type="text" id="display" placeholder="0" autocomplete="off" autofocus>
                     </div>
 
                     <div class="buttons">
@@ -1343,9 +1343,12 @@
 
         function clearHistory() {
             historyData = [];
-            localStorage.removeItem('cryptoCalcHistory');
             renderHistory();
         }
+
+        window.addEventListener('load', () => {
+            display.focus();
+        });
     </script>
 
 </body>
