@@ -102,12 +102,28 @@
         .app-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--primary-accent);
             text-align: center;
             letter-spacing: -0.5px;
             font-family: 'Inter', sans-serif;
             opacity: 0.8;
             margin: 0 0 30px 0;
+        }
+
+        .title-lets {
+            color: var(--secondary-accent);
+        }
+
+        .title-exchange {
+            color: var(--primary-accent);
+        }
+
+        /* Mac Title Overrides */
+        [data-btn-style="mac"] .title-lets {
+            color: #ffffff;
+        }
+
+        [data-btn-style="mac"] .title-exchange {
+            color: #FF9F0A;
         }
 
         .center-group {
@@ -1285,6 +1301,85 @@
                 right: 10px;
             }
         }
+
+        /* Settings Info Icon & Tooltip */
+        .settings-info {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .info-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .info-icon:hover {
+            color: var(--primary-accent);
+            border-color: var(--primary-accent);
+            background: rgba(58, 125, 255, 0.1);
+        }
+
+        .info-tooltip {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 12px;
+            width: 220px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+        }
+
+        .info-icon:hover+.info-tooltip {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .hotkey-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        .hotkey-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+
+        .kbd {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
+            font-size: 0.75rem;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap"
@@ -1441,7 +1536,8 @@
         <div class="center-group">
             <!-- Calculator Column -->
             <div class="calculator-column">
-                <h1 class="app-title">LetsExchange</h1>
+                <h1 class="app-title"><span class="title-lets">Lets</span><span class="title-exchange">Exchange</span>
+                </h1>
 
                 <div class="header-controls hidden" id="headerControls">
                     <div class="header-left">
@@ -1599,6 +1695,24 @@
                 <input type="checkbox" id="potatoModeToggle" onchange="togglePotatoMode(this)">
                 <span class="slider"></span>
             </label>
+        </div>
+
+        <div class="settings-info">
+            <div class="info-icon">i</div>
+            <div class="info-tooltip">
+                <ul class="hotkey-list">
+                    <li class="hotkey-item"><span>Clear</span> <span class="kbd">Esc</span></li>
+                    <li class="hotkey-item"><span>Delta (Δ)</span> <span class="kbd">D</span></li>
+                    <li class="hotkey-item"><span>Potato Mode</span> <span class="kbd">Y</span></li>
+                    <li class="hotkey-item"><span>Pro Features</span> <span class="kbd">P</span></li>
+                    <li class="hotkey-item"><span>Mac Style</span> <span class="kbd">M</span></li>
+                    <li class="hotkey-item"><span>Help</span> <span class="kbd">H</span></li>
+                    <li class="hotkey-item"><span>Settings</span> <span class="kbd">O</span></li>
+                </ul>
+                <div style="margin-top:8px; font-size:0.7rem; color:#666; text-align:center;">
+                    Works in any keyboard layout
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1865,10 +1979,6 @@
         }
 
         display.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                calculate();
-            }
             if (e.key === 'Backspace') {
                 e.preventDefault();
                 deleteLast();
@@ -2345,7 +2455,7 @@
             if (isPotatoMode) return; // Block in Potato Mode
             if (btcFetchInterval) clearInterval(btcFetchInterval);
             fetchBtcPrice();
-            btcFetchInterval = setInterval(fetchBtcPrice, 60000);
+            btcFetchInterval = setInterval(fetchBtcPrice, 30000);
         }
 
         function stopBtcPolling() {
@@ -2501,6 +2611,83 @@
 
         // Initialize Potato Mode
         applyPotatoMode();
+
+        // --- Global Hotkeys ---
+        // --- Global Hotkeys (Layout-Independent) ---
+        document.addEventListener('keydown', (e) => {
+            const code = e.code;
+
+            // ESC -> Clear (AC)
+            if (code === 'Escape') {
+                e.preventDefault();
+                clearDisplay();
+                return;
+            }
+
+            // Enter -> Calculate
+            if (code === 'Enter') {
+                e.preventDefault();
+                calculate();
+                return;
+            }
+
+            // Specific Hotkeys (KeyD, KeyP, KeyH, KeyO)
+            // Works regardless of layout (e.g. D = D/В, P = P/З, etc.)
+
+            // Delta (KeyD)
+            if (code === 'KeyD') {
+                e.preventDefault();
+                inputSymbol('Δ');
+                return;
+            }
+
+            // Potato Mode (KeyY)
+            if (code === 'KeyY') {
+                e.preventDefault();
+                const checkbox = document.getElementById('potatoModeToggle');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    togglePotatoMode(checkbox);
+                }
+                return;
+            }
+
+            // Pro Features (KeyP)
+            if (code === 'KeyP') {
+                e.preventDefault();
+                const checkbox = document.getElementById('proFeaturesToggle');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    toggleProFeatures(checkbox);
+                }
+                return;
+            }
+
+            // Mac Button Style (KeyM)
+            if (code === 'KeyM') {
+                e.preventDefault();
+                const checkbox = document.getElementById('macButtonsToggle');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    toggleMacButtons(checkbox);
+                }
+                return;
+            }
+
+            // Help Panel (KeyH)
+            if (code === 'KeyH') {
+                e.preventDefault();
+                toggleHelpPanel();
+                return;
+            }
+
+            // Settings Modal (KeyO)
+            if (code === 'KeyO') {
+                e.preventDefault();
+                toggleSettingsModal();
+                return;
+            }
+        });
     </script>
 
 </body>
