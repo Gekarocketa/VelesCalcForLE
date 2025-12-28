@@ -1392,21 +1392,55 @@
         });
 
         function inputSymbol(symbol) {
+            const start = display.selectionStart;
+            const end = display.selectionEnd;
+
+            // Handle initial "0" replacement if input is a number
             if (display.value === '0' && !['+', '-', '*', '/', '%'].includes(symbol)) {
                 display.value = symbol;
+                display.focus();
+                // Move cursor to after the new symbol
+                display.setSelectionRange(symbol.length, symbol.length);
             } else {
-                display.value += symbol;
+                // Insert at cursor position
+                const val = display.value;
+                const before = val.substring(0, start);
+                const after = val.substring(end);
+
+                display.value = before + symbol + after;
+
+                display.focus();
+                const newPos = start + symbol.length;
+                display.setSelectionRange(newPos, newPos);
             }
-            focusAndMoveCursorToEnd();
         }
 
         function clearDisplay() {
             display.value = '';
             focusAndMoveCursorToEnd();
         }
+
         function deleteLast() {
-            display.value = display.value.slice(0, -1);
-            focusAndMoveCursorToEnd();
+            const start = display.selectionStart;
+            const end = display.selectionEnd;
+            const val = display.value;
+
+            if (start !== end) {
+                // Delete Selection
+                display.value = val.substring(0, start) + val.substring(end);
+                display.focus();
+                display.setSelectionRange(start, start);
+            } else {
+                // Normal Backspace
+                if (start === 0) {
+                    display.focus();
+                    return; // Nothing to delete
+                }
+
+                display.value = val.substring(0, start - 1) + val.substring(end);
+                display.focus();
+                display.setSelectionRange(start - 1, start - 1);
+            }
         }
 
         function parseCryptoNumber(numStr) {
