@@ -1198,6 +1198,12 @@
             return clean;
         }
 
+        function formatResult(num) {
+            if (num === Infinity || num === -Infinity || isNaN(num)) return 'ERROR';
+            let s = num.toFixed(10);
+            return s.replace(/\.?0+$/, "");
+        }
+
         function calculate() {
             let rawInput = display.value;
             if (!rawInput) return;
@@ -1206,25 +1212,61 @@
             let tokens = expr.split(/([+\-*/%()])/);
             let cleanExpression = tokens.map(token => parseCryptoNumber(token)).join('');
 
-            // Fix percentage calculation: X + Y% = X + (X * Y/100), X - Y% = X - (X * Y/100)
-            // Pattern: number operator number% (handles with or without spaces)
-            cleanExpression = cleanExpression.replace(/(\d+(?:\.\d+)?)\s*([+\-])\s*(\d+(?:\.\d+)?)%/g, function (match, num1, op, num2) {
-                let base = parseFloat(num1);
-                let percent = parseFloat(num2);
-                let percentValue = base * (percent / 100);
-                if (op === '+') {
-                    return (base + percentValue).toString();
-                } else {
-                    return (base - percentValue).toString();
-                }
-            });
+            // Iteratively solve percentages
+            // Algorithm: Find first %, check context (operator before it), solve, repeat.
+            while (cleanExpression.includes('%')) {
+                const percentIndex = cleanExpression.indexOf('%');
+                const substring = cleanExpression.substring(0, percentIndex);
+                const remainder = cleanExpression.substring(percentIndex + 1);
 
-            // Handle standalone percentages (e.g., "50%" = 0.5)
-            cleanExpression = cleanExpression.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
+                // Regex to find [Expression] [Operator] [Number] at the end of substring
+                // Group 1: Left Part (Expression), Group 2: Operator, Group 3: Number
+                const match = substring.match(/^(.*)([\+\-\*\/])(\d+(?:\.\d+)?)$/);
+
+                if (match) {
+                    const leftPart = match[1];
+                    const operator = match[2];
+                    const number = parseFloat(match[3]);
+
+                    if ((operator === '+' || operator === '-') && leftPart.trim() !== '') {
+                        try {
+                            // Evaluate Left Part to get base value for percentage
+                            const base = new Function('return ' + leftPart)();
+                            // Calculate percentage value of the base
+                            const percentValue = base * (number / 100);
+                            // Apply operation
+                            const result = operator === '+' ? base + percentValue : base - percentValue;
+
+                            // Replace the entire handled segment with the result
+                            cleanExpression = result + remainder;
+                        } catch (e) {
+                            // If eval fails (e.g. invalid syntax), fallback to simple replacement
+                            cleanExpression = substring.replace(/(\d+(?:\.\d+)?)$/, '($1/100)') + remainder;
+                        }
+                    } else {
+                        // Multiplicative (* /) or no valid left part: treat N% as N/100
+                        // e.g. 10 * 10% -> 10 * 0.1
+                        cleanExpression = substring.substring(0, substring.length - match[3].length) + (number / 100) + remainder;
+                    }
+                } else {
+                    // No pattern matched (e.g. "50%" or "(1+2)%"), treat as /100
+                    const numMatch = substring.match(/(\d+(?:\.\d+)?)$/);
+                    if (numMatch) {
+                        const val = parseFloat(numMatch[1]);
+                        const pre = substring.substring(0, substring.length - numMatch[1].length);
+                        cleanExpression = pre + (val / 100) + remainder;
+                    } else {
+                        // Just replace % symbol with /100 if no number found (safeguard)
+                        cleanExpression = cleanExpression.replace('%', '/100');
+                    }
+                }
+            }
 
             try {
                 const result = new Function('return ' + cleanExpression)();
-                let formattedResult = Math.round(result * 10000000000) / 10000000000;
+
+                // Use formatResult to fix 3e-8 bug
+                let formattedResult = formatResult(result);
 
                 addToHistory(rawInput, formattedResult);
 
