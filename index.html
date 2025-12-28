@@ -10,7 +10,7 @@
     <style>
         :root {
             /* Default Dark Theme */
-            --bg-color: #000000;
+            --bg-color: #1a1a1a;
             --card-bg: rgba(30, 30, 30, 0.75);
             --text-color: #ffffff;
             --primary-accent: #3A7DFF;
@@ -282,6 +282,76 @@
 
         .partners-table td.text-left {
             text-align: left;
+        }
+
+        /* --- Potato Mode (Performance) --- */
+        /* --- Potato Mode (Performance) - OVERRIDES --- */
+        body[data-perf="potato"] {
+            background-color: #252525 !important;
+        }
+
+        body[data-perf="potato"] * {
+            transition: none !important;
+            animation: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            /* Optional: Make it super square/fast? Keeping rounded for now but simplifying is key */
+        }
+
+        body[data-perf="potato"] .calculator,
+        body[data-perf="potato"] .help-panel,
+        body[data-perf="potato"] .history-panel,
+        body[data-perf="potato"] .btc-widget,
+        body[data-perf="potato"] .modal-content,
+        body[data-perf="potato"] .settings-modal,
+        /* Added settings-modal */
+        body[data-perf="potato"] .header-left button,
+        body[data-perf="potato"] .btn-delta-header {
+            background: #252525 !important;
+            border: 1px solid #444 !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+        }
+
+        body[data-perf="potato"] .display-container,
+        body[data-perf="potato"] .btn-operation,
+        body[data-perf="potato"] .btn-num,
+        body[data-perf="potato"] .btc-input-group input,
+        body[data-perf="potato"] input {
+            background: #333 !important;
+            border: 1px solid #444 !important;
+            color: #ddd !important;
+        }
+
+        body[data-perf="potato"] .history-item:hover {
+            background: #333 !important;
+        }
+
+        body[data-perf="potato"] .btn-equal {
+            background: var(--primary-accent) !important;
+            box-shadow: none !important;
+        }
+
+        /* --- BTC Converter Styles --- */
+        .btc-input-group input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-color);
+            padding: 8px 12px;
+            font-size: 1rem;
+            font-family: 'Roboto Mono', monospace;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .btc-input-group input:focus {
+            border-color: rgba(58, 125, 255, 0.5);
+            box-shadow: 0 0 0 2px rgba(58, 125, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         /* Badge Styles */
@@ -938,13 +1008,13 @@
         }
 
         .btn-delta-header {
-            width: 44px;
-            height: 44px;
+            width: 55px;
+            height: 55px;
             border-radius: 12px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             color: #FF9F0A;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -1223,7 +1293,11 @@
 
 <body>
 
-    <div class="watermark">Veles Project</div>
+    <div class="watermark">
+        Veles Project
+        <span id="lowPowerIndicator" style="margin-left: 8px; font-size: 1.2rem; color: #ffeb3b; display: none;"
+            title="Potato Mode Active">⚡</span>
+    </div>
 
     <!-- Left Sidebar - Help Panel -->
     <div class="help-panel hidden" id="helpPanel">
@@ -1369,13 +1443,12 @@
             <div class="calculator-column">
                 <h1 class="app-title">LetsExchange</h1>
 
-                <!-- Header Controls (Quick Fees & Delta) -->
                 <div class="header-controls hidden" id="headerControls">
                     <div class="header-left">
                         <button class="ghost-btn icon-btn" onclick="applyQuickFee(-0.1)">-0.1%</button>
                         <button class="ghost-btn icon-btn" onclick="applyQuickFee(0.1)">+0.1%</button>
                     </div>
-                    <div class="header-right">
+                    <div class="header-right" style="position: relative; left: -20px;">
                         <button class="btn-delta-header" onclick="toggleDeltaMode()">Δ</button>
                     </div>
                 </div>
@@ -1456,25 +1529,22 @@
                         </div>
                     </div>
                     <div class="btc-price-display" id="btcPriceDisplay">Loading...</div>
-                    <div class="btc-converter">
-                        <div
-                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-                            <label class="btc-label" id="btcInputLabel">Amount (BTC)</label>
-                            <button class="settings-toggle-btn" onclick="toggleSatsMode()" id="satsModeBtn"
-                                style="font-size:0.75rem; padding: 2px 8px;">Mode: BTC</button>
-                        </div>
-                        <div class="btc-input-group">
-                            <input type="text" id="btcInput" placeholder="0.00">
-                        </div>
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                        <label class="btc-label" id="btcInputLabel">Amount (BTC)</label>
+                    </div>
+                    <div class="btc-input-group">
+                        <input type="text" id="btcInput" placeholder="0.00">
+                    </div>
 
-                        <div class="btc-input-group" style="margin-top: 10px;">
-                            <label class="btc-label">Value (USDT)</label>
-                            <input type="text" id="usdtInput" placeholder="0.00">
-                        </div>
+                    <div class="btc-input-group" style="margin-top: 10px;">
+                        <label class="btc-label">Value (USDT)</label>
+                        <input type="text" id="usdtInput" placeholder="0.00">
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Top Left Controls (Show Help/Settings) -->
@@ -1518,6 +1588,15 @@
             <span class="settings-label">Pro Features</span>
             <label class="switch">
                 <input type="checkbox" id="proFeaturesToggle" onchange="toggleProFeatures(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="settings-row" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.2rem;">⚡</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="potatoModeToggle" onchange="togglePotatoMode(this)">
                 <span class="slider"></span>
             </label>
         </div>
@@ -2263,6 +2342,7 @@
 
         // BTC Bidirectional Converter
         function startBtcPolling() {
+            if (isPotatoMode) return; // Block in Potato Mode
             if (btcFetchInterval) clearInterval(btcFetchInterval);
             fetchBtcPrice();
             btcFetchInterval = setInterval(fetchBtcPrice, 60000);
@@ -2279,9 +2359,7 @@
                     btcPrice = parseFloat(data.price);
                     document.getElementById('btcPriceDisplay').textContent = `$${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
-                    // Update the OTHER field based on what's active or last edited?
-                    // Usually update USDT based on BTC if BTC has value, else inverse.
-                    // Let's rely on updateLogic
+                    // Update the OTHER field based on active element
                     if (document.activeElement === usdtInput) {
                         convertFromUsdt();
                     } else {
@@ -2296,33 +2374,6 @@
 
         const btcInput = document.getElementById('btcInput');
         const usdtInput = document.getElementById('usdtInput');
-        let isSatsMode = false;
-
-        function toggleSatsMode() {
-            isSatsMode = !isSatsMode;
-            const btn = document.getElementById('satsModeBtn');
-            const label = document.getElementById('btcInputLabel');
-
-            if (isSatsMode) {
-                btn.textContent = 'Mode: Sats';
-                label.textContent = 'Amount (Sats)';
-
-                // Convert current value in BTC input to Sats
-                let val = parseFloat(btcInput.value);
-                if (!isNaN(val)) {
-                    btcInput.value = Math.round(val * 100000000);
-                }
-            } else {
-                btn.textContent = 'Mode: BTC';
-                label.textContent = 'Amount (BTC)';
-
-                // Convert current value in Sats input to BTC
-                let val = parseFloat(btcInput.value);
-                if (!isNaN(val)) {
-                    btcInput.value = (val / 100000000).toFixed(8).replace(/\.?0+$/, "");
-                }
-            }
-        }
 
         function convertFromBtc() {
             let val = parseFloat(btcInput.value);
@@ -2330,9 +2381,7 @@
                 usdtInput.value = '';
                 return;
             }
-
-            let btcAmount = isSatsMode ? val / 100000000 : val;
-            let usdtVal = btcAmount * btcPrice;
+            let usdtVal = val * btcPrice;
             usdtInput.value = usdtVal.toFixed(2);
         }
 
@@ -2342,13 +2391,8 @@
                 btcInput.value = '';
                 return;
             }
-
             let btcAmount = val / btcPrice;
-            if (isSatsMode) {
-                btcInput.value = Math.round(btcAmount * 100000000);
-            } else {
-                btcInput.value = btcAmount.toFixed(8);
-            }
+            btcInput.value = btcAmount.toFixed(8);
         }
 
         if (btcInput && usdtInput) {
@@ -2391,6 +2435,72 @@
 
         // Initialize Pro Features
         applyProFeatures();
+
+        // --- Potato Mode Logic ---
+        let isPotatoMode = JSON.parse(localStorage.getItem('calcPotatoMode')) || false;
+
+        function togglePotatoMode(checkbox) {
+            isPotatoMode = checkbox.checked;
+            localStorage.setItem('calcPotatoMode', JSON.stringify(isPotatoMode));
+            applyPotatoMode();
+        }
+
+        function applyPotatoMode() {
+            const body = document.body;
+            const toggle = document.getElementById('potatoModeToggle');
+            const indicator = document.getElementById('lowPowerIndicator');
+
+            if (toggle) toggle.checked = isPotatoMode;
+
+            if (isPotatoMode) {
+                body.setAttribute('data-perf', 'potato');
+                if (indicator) indicator.style.display = 'inline';
+                stopBtcPolling();
+            } else {
+                body.removeAttribute('data-perf');
+                if (indicator) indicator.style.display = 'none';
+                if (isProFeaturesEnabled && !isBtcLocked) {
+                    startBtcPolling();
+                }
+            }
+            renderHistory();
+        }
+
+        // Unified Render History (Handling Delta, Mac Theme, and Full List)
+        // Note: No slicing/truncation for Potato Mode as requested.
+        renderHistory = function () {
+            historyList.innerHTML = '';
+            historyData.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+
+                // Delta Logic
+                const isDelta = item.isDelta || (typeof item.res === 'string' && item.res.includes('%') && (item.expr.includes('Δ') || item.expr.includes('Delta')));
+                const resClass = isDelta ? 'history-res history-res-delta' : 'history-res';
+
+                // Mac Theme Logic
+                const isMac = document.body.getAttribute('data-btn-style') === 'mac';
+                const colorStyle = (isDelta && isMac) ? 'style="color: #FF9F0A"' : '';
+
+                li.innerHTML = `
+                <div style="display:flex; flex-direction:column; width:100%">
+                    <span class="history-expr" title="Click to edit formula">${item.expr}</span>
+                    <div class="history-meta">
+                        <span class="${resClass}" ${colorStyle}>= ${item.res}</span>
+                        <span class="history-time">${item.time}</span>
+                    </div>
+                </div>
+                `;
+                li.onclick = () => {
+                    display.value = item.expr;
+                    display.focus();
+                };
+                historyList.appendChild(li);
+            });
+        };
+
+        // Initialize Potato Mode
+        applyPotatoMode();
     </script>
 
 </body>
