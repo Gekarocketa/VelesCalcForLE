@@ -1,3 +1,10 @@
+<!-- 
+  Привет всем, кто залез сюда поглазеть, что и как тут устроено! Это самописный, на коленке, SPA-калькулятор для 
+  операционистов. Если вы опытным глазом видите какой-то мега-просчёт, пишите
+  Мусора тут выше крыши, но куда без этого ?)
+  — Veles
+-->
+
 <!DOCTYPE html>
 <html lang="ru">
 
@@ -300,8 +307,7 @@
             text-align: left;
         }
 
-        /* --- Potato Mode (Performance) --- */
-        /* --- Potato Mode (Performance) - OVERRIDES --- */
+        /* --- Potato Mode (Performance Overrides) --- */
         body[data-perf="potato"] {
             background-color: #252525 !important;
         }
@@ -948,7 +954,7 @@
             display: none;
         }
 
-        /* Скроллбар */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -2519,7 +2525,7 @@
             usdtInput.addEventListener('input', convertFromUsdt);
         }
 
-        // Lock Logic (Preserved)
+        // Logic: Manage BTC Auto-Update Lock State
         function toggleBtcLock() {
             isBtcLocked = !isBtcLocked;
             localStorage.setItem('calcBtcLock', JSON.stringify(isBtcLocked));
@@ -2555,7 +2561,7 @@
         // Initialize Pro Features
         applyProFeatures();
 
-        // --- Potato Mode Logic ---
+        // --- Potato Mode Configuration (Performance) ---
         let isPotatoMode = JSON.parse(localStorage.getItem('calcPotatoMode')) || false;
 
         function togglePotatoMode(checkbox) {
@@ -2585,8 +2591,8 @@
             renderHistory();
         }
 
-        // Unified Render History (Handling Delta, Mac Theme, and Full List)
-        // Note: No slicing/truncation for Potato Mode as requested.
+        // Renders history list, handling Delta symbols and Mac-style theming.
+        // Note: Full history is preserved even in Potato Mode.
         renderHistory = function () {
             historyList.innerHTML = '';
             historyData.forEach(item => {
@@ -2620,27 +2626,19 @@
 
         // Initialize Potato Mode
         applyPotatoMode();
-        // --- Global Hotkeys ---
-        // --- Global Hotkeys (Layout-Independent) ---
+
+        // --- Global Hotkey Management ---
         document.addEventListener('keydown', (e) => {
             const code = e.code;
             const target = e.target;
             const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
             const isContentEditable = target.isContentEditable;
 
-            // Allow typing in Tables/Inputs (except specific calculator overrides)
-            // Rule: If typing in contenteditable OR any input/textarea that is NOT the main display, disable most hotkeys.
+            // Rule: Disable general hotkeys while typing in standard inputs, but maintain calculator responsiveness.
             // Main Display ID is 'display'.
             const isTyping = isContentEditable || (isInput && target.id !== 'display');
 
-            // ESC -> Clear (AC) - Always works in display, maybe ignored in table?
-            // User query: "If the focus is on the main calculator #display ... Escape (AC) hotkeys should still work."
-            // If typing in table, maybe we want to blur? or ignore?
-            // User said: "KeyD (Delta) and Escape (AC) hotkeys should still work" (in Display).
-            // Let's allow ESC globally unless strictly editing?
-            // Actually, standard behavior: Esc in input might clear input.
-            // Calculator ClearDisplay wipes EVERYTHING.
-            // Let's restrict Esc to NOT fire if typing in table (to avoid losing table edits or unexpected wipe).
+            // Special Case: "Escape" clears the calculator display even if focused elsewhere (unless editing table).
             if (code === 'Escape') {
                 if (!isTyping || target.id === 'display') {
                     e.preventDefault();
@@ -2658,11 +2656,10 @@
                 return;
             }
 
-            // Specific Hotkeys (KeyD, KeyP, KeyH, KeyO)
-            // Works regardless of layout (e.g. D = D/В, P = P/З, etc.)
+            // Platform-agnostic Hotkey Bindings
 
             // Delta (KeyD)
-            // User: "KeyD (Delta) ... should still work" in Display.
+            // Exception: Allow "Delta" input if specifically focused on the display.
             if (code === 'KeyD') {
                 // If typing in a description or partner name, we need 'D'/'d'.
                 if (isTyping && target.id !== 'display') return;
@@ -2672,19 +2669,13 @@
                 return;
             }
 
-            // --- The following keys must be suppressed if typing ANYWHERE (including Display if needed, but user said KeyH/KeyO should be ignored in display) ---
-
-            // "If the focus is on the main calculator #display, KeyH... and KeyO... should probably be ignored... to avoid accidental triggers."
-            // "If the user is typing in any contenteditable ... hotkeys (H, P, O) must be disabled."
-            // So: If (isTyping) OR (target.id === 'display'), return.
-            // Wait, isTyping includes "isInput && id != display".
-            // So: if (isTyping || target.id === 'display') return;
+            // Hotkey Suppression: Prevent accidental triggers while editing text fields.
             // Simplified: if (isContentEditable || isInput) return;
 
             if (isContentEditable || isInput) return;
 
-            // --- Global Type-to-Focus (Auto-Focus Display) ---
-            // If user types numbers/operators/backspace while NOT typing in a field, focus display and input.
+            // Feature: Auto-Focus Display on Input
+            // Capture global numeric input and redirect to calculator display.
             const key = e.key;
 
             // Auto-Focus for Math keys
@@ -2827,19 +2818,10 @@
                 // 2. Try Text/TSV (Partners Import)
                 else {
                     if (confirm('Import text as Partners List?\n\nOK: REPLACE existing table\nCancel: APPEND to existing table')) {
-                        // OK -> Replace
+                        // OK: Replace existing data
                         processTextImport(content, true);
                     } else {
-                        // Cancel -> Append (if user didn't mean to cancel operation? confirm returns false on cancel)
-                        // Wait, confirm is binary. "Cancel" usually means "Abort".
-                        // Better approach: Prompt or Custom confirmation.
-                        // User request: "Add a choice... Replace or Append".
-                        // Using 'confirm' is tricky for 3 states (Replace, Append, Abort).
-                        // I will use a simple prompt logic or assume Cancel = Append?
-                        // Let's use `confirm("Click OK to REPLACE. Click Cancel to APPEND.")` 
-                        // But what if they want to Abort? They can just not select file?
-                        // I'll stick to: OK=Replace, Cancel=Append. 
-                        // It's a bit aggressive but matches "Add a choice".
+                        // Cancel: Append to existing data
                         processTextImport(content, false);
                     }
                 }
@@ -2860,7 +2842,7 @@
 
                 // Map Columns: 
                 // 0: Partner, 1: Float%, 2: Min, 3: Coins, 4: Details, 5: AutoRefund
-                // Clean quotes if present (excel sometimes wraps in quotes)
+                // Strip quotes if necessary (e.g., CSV/Excel artifacts)
                 const clean = (s) => s ? s.trim().replace(/^"|"$/g, '') : '';
 
                 const rowData = {
@@ -2880,7 +2862,7 @@
                 return;
             }
 
-            // Update Data
+            // Update DataModel
             let finalData = [];
             if (replace) {
                 finalData = newRows;
@@ -2890,13 +2872,51 @@
             }
 
             localStorage.setItem('partnersTableData', JSON.stringify(finalData));
-            loadTableData(); // Reloads table and attaches listeners (which triggers badge logic via attachRowListeners? No, loadTableData creates rows with badges)
-            // Wait, createTableRow uses data.floatPercent to determine class.
-            // So if `data.floatPercent` is just text "3%", createTableRow needs to handle it.
-            // `createTableRow` parses float value to set class. So it should work immediately!
+            localStorage.setItem('partnersTableData', JSON.stringify(finalData));
+            loadTableData(); // Re-renders the table with new data and attaches listeners.
+            // createTableRow automatically handles parsing string percentages for badge styling.
 
             alert(`Imported ${importCount} partners.`);
         }
+
+        // яйко сподiвайко 
+        console.log(
+            `%c
+                           *     .--.
+                                / /  \`
+               +               | |
+                      '         \\ \\__,
+                  *          +   '--'  *
+                      +   /\\
+         +              .'  '.   *
+                *      /======\\      +
+                      ;:.  _   ;
+                      |:. (_)  |
+                      |:.  _   |
+            +         |:. (_)  |          *
+                      ;:.      ;
+                    .' \\:.    / \`.
+                   / .-'':._.'\`-. \\
+                   |/    /||\\    \\|
+                 _..--"""\`\`\`\`"""--.._
+           _.-'\`\`                    \`\`'-._
+         -'                                '-
+
+Типа                              88                                     
+                                  88                    ,d               
+                                  88                    88               
+8b,dPPYba,  ,adPPYba,   ,adPPYba, 88   ,d8  ,adPPYba, MM88MMM  
+88P'   "Y8 a8"     "8a a8"     "" 88 ,a8"  a8P_____88   88    
+88         8b       d8 8b         8888[    8PP"""""""   88    
+88         "8a,   ,a8" "8a,   ,aa 88\`"Yba, "8b,   ,aa   88,  
+88          \`"YbbdP"'  \`"Ybbd8"'  88   \`Y8a \`"Ybbd8"'   "Y888 🚀
+`,
+            'color: #3A7DFF; font-weight: bold; font-family: monospace; font-size: 16px;'
+        );
+        console.log(
+            '%cДарова! это Veles, слеплено все из говна и палок XD, ничего сложного тут не использовалось, практически ванила.\nВсем кискам пис ✌️',
+            'background: #222; color: #bada55; padding: 10px; border-radius: 5px; font-size: 14px; font-family: "Segoe UI", sans-serif; border: 1px solid #444;'
+        );
     </script>
 
 </body>
