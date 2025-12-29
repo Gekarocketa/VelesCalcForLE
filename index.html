@@ -2683,6 +2683,39 @@
 
             if (isContentEditable || isInput) return;
 
+            // --- Global Type-to-Focus (Auto-Focus Display) ---
+            // If user types numbers/operators/backspace while NOT typing in a field, focus display and input.
+            const key = e.key;
+
+            // Auto-Focus for Math keys
+            if (/^[0-9+\-*/%().=,÷×]$/.test(key)) {
+                e.preventDefault();
+                display.focus(); // Ensure focus
+
+                // Special mapping for keys that calculate
+                if (key === '=' || key === 'Enter') {
+                    calculate();
+                    return;
+                }
+
+                // Normalize symbols
+                let char = key;
+                if (char === ',') char = '.';
+                if (char === '÷') char = '/';
+                if (char === '×') char = '*';
+
+                inputSymbol(char);
+                return;
+            }
+
+            // Auto-Focus for Backspace
+            if (key === 'Backspace') {
+                e.preventDefault();
+                display.focus();
+                deleteLast();
+                return;
+            }
+
             // Potato Mode (KeyY)
             if (code === 'KeyY') {
                 e.preventDefault();
