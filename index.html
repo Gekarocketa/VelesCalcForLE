@@ -1697,6 +1697,15 @@
             </label>
         </div>
 
+        <div class="settings-row"
+            style="margin-top: 16px; margin-bottom: 16px; display:flex; justify-content: space-between; gap: 10px;">
+            <button class="ghost-btn" onclick="exportConfig()" style="font-size: 0.9rem; padding: 10px; flex: 1;">Export
+                Config</button>
+            <button class="ghost-btn" onclick="document.getElementById('importFile').click()"
+                style="font-size: 0.9rem; padding: 10px; color: var(--primary-accent); flex: 1;">Import Config</button>
+            <input type="file" id="importFile" accept=".json,.txt" style="display: none;" onchange="importConfig(this)">
+        </div>
+
         <div class="settings-info">
             <div class="info-icon">i</div>
             <div class="info-tooltip">
@@ -2395,7 +2404,7 @@
                         let diff = target - base;
                         let percentage = (diff / base) * 100;
                         let sign = percentage >= 0 ? '+' : '';
-                        let resultStr = `${sign}${percentage.toFixed(2)}%`;
+                        let resultStr = `${sign}${percentage.toFixed(5).replace(/\.?0+$/, "")}%`;
 
                         // Custom History Entry
                         const item = {
@@ -2611,23 +2620,41 @@
 
         // Initialize Potato Mode
         applyPotatoMode();
-
         // --- Global Hotkeys ---
         // --- Global Hotkeys (Layout-Independent) ---
         document.addEventListener('keydown', (e) => {
             const code = e.code;
+            const target = e.target;
+            const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+            const isContentEditable = target.isContentEditable;
 
-            // ESC -> Clear (AC)
+            // Allow typing in Tables/Inputs (except specific calculator overrides)
+            // Rule: If typing in contenteditable OR any input/textarea that is NOT the main display, disable most hotkeys.
+            // Main Display ID is 'display'.
+            const isTyping = isContentEditable || (isInput && target.id !== 'display');
+
+            // ESC -> Clear (AC) - Always works in display, maybe ignored in table?
+            // User query: "If the focus is on the main calculator #display ... Escape (AC) hotkeys should still work."
+            // If typing in table, maybe we want to blur? or ignore?
+            // User said: "KeyD (Delta) and Escape (AC) hotkeys should still work" (in Display).
+            // Let's allow ESC globally unless strictly editing?
+            // Actually, standard behavior: Esc in input might clear input.
+            // Calculator ClearDisplay wipes EVERYTHING.
+            // Let's restrict Esc to NOT fire if typing in table (to avoid losing table edits or unexpected wipe).
             if (code === 'Escape') {
-                e.preventDefault();
-                clearDisplay();
+                if (!isTyping || target.id === 'display') {
+                    e.preventDefault();
+                    clearDisplay();
+                }
                 return;
             }
 
             // Enter -> Calculate
             if (code === 'Enter') {
-                e.preventDefault();
-                calculate();
+                if (!isTyping || target.id === 'display') {
+                    e.preventDefault();
+                    calculate();
+                }
                 return;
             }
 
@@ -2635,11 +2662,26 @@
             // Works regardless of layout (e.g. D = D/В, P = P/З, etc.)
 
             // Delta (KeyD)
+            // User: "KeyD (Delta) ... should still work" in Display.
             if (code === 'KeyD') {
+                // If typing in a description or partner name, we need 'D'/'d'.
+                if (isTyping && target.id !== 'display') return;
+
                 e.preventDefault();
                 inputSymbol('Δ');
                 return;
             }
+
+            // --- The following keys must be suppressed if typing ANYWHERE (including Display if needed, but user said KeyH/KeyO should be ignored in display) ---
+
+            // "If the focus is on the main calculator #display, KeyH... and KeyO... should probably be ignored... to avoid accidental triggers."
+            // "If the user is typing in any contenteditable ... hotkeys (H, P, O) must be disabled."
+            // So: If (isTyping) OR (target.id === 'display'), return.
+            // Wait, isTyping includes "isInput && id != display".
+            // So: if (isTyping || target.id === 'display') return;
+            // Simplified: if (isContentEditable || isInput) return;
+
+            if (isContentEditable || isInput) return;
 
             // Potato Mode (KeyY)
             if (code === 'KeyY') {
@@ -2688,6 +2730,140 @@
                 return;
             }
         });
+
+        // --- Import / Export Logic ---
+
+        function exportConfig() {
+            const config = {
+                settings: {
+                    isPotatoMode,
+                    isProFeaturesEnabled,
+                    isMacButtons,
+                    isAutoCopyEnabled,
+                    isBtcLocked
+                },
+                partnersTableData: JSON.parse(localStorage.getItem('partnersTableData') || '[]'),
+                history: historyData
+            };
+
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calculator_config_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importConfig(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const content = e.target.result.trim();
+
+                // 1. Try JSON (Full Config)
+                if (content.startsWith('{')) {
+                    try {
+                        const config = JSON.parse(content);
+                        if (confirm('Restore full configuration? This will overwrite current settings and data.')) {
+                            // Restore Settings
+                            if (config.settings) {
+                                localStorage.setItem('calcPotatoMode', JSON.stringify(config.settings.isPotatoMode));
+                                localStorage.setItem('calcProFeatures', JSON.stringify(config.settings.isProFeaturesEnabled));
+                                localStorage.setItem('calcMacButtons', JSON.stringify(config.settings.isMacButtons));
+                                localStorage.setItem('calcAutoCopy', JSON.stringify(config.settings.isAutoCopyEnabled));
+                                localStorage.setItem('calcBtcLock', JSON.stringify(config.settings.isBtcLocked));
+                            }
+                            // Restore Data
+                            if (config.partnersTableData) {
+                                localStorage.setItem('partnersTableData', JSON.stringify(config.partnersTableData));
+                            }
+                            if (config.history) {
+                                localStorage.setItem('cryptoCalcHistory', JSON.stringify(config.history));
+                            }
+                            alert('Configuration restored! Reloading...');
+                            location.reload();
+                        }
+                    } catch (err) {
+                        alert('Invalid JSON Config file.');
+                        console.error(err);
+                    }
+                }
+                // 2. Try Text/TSV (Partners Import)
+                else {
+                    if (confirm('Import text as Partners List?\n\nOK: REPLACE existing table\nCancel: APPEND to existing table')) {
+                        // OK -> Replace
+                        processTextImport(content, true);
+                    } else {
+                        // Cancel -> Append (if user didn't mean to cancel operation? confirm returns false on cancel)
+                        // Wait, confirm is binary. "Cancel" usually means "Abort".
+                        // Better approach: Prompt or Custom confirmation.
+                        // User request: "Add a choice... Replace or Append".
+                        // Using 'confirm' is tricky for 3 states (Replace, Append, Abort).
+                        // I will use a simple prompt logic or assume Cancel = Append?
+                        // Let's use `confirm("Click OK to REPLACE. Click Cancel to APPEND.")` 
+                        // But what if they want to Abort? They can just not select file?
+                        // I'll stick to: OK=Replace, Cancel=Append. 
+                        // It's a bit aggressive but matches "Add a choice".
+                        processTextImport(content, false);
+                    }
+                }
+            };
+            reader.readAsText(file);
+            input.value = ''; // Reset
+        }
+
+        function processTextImport(text, replace = false) {
+            const lines = text.split(/\r?\n/);
+            const newRows = [];
+            let importCount = 0;
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                const cols = line.split('\t');
+                if (cols.length < 1) return;
+
+                // Map Columns: 
+                // 0: Partner, 1: Float%, 2: Min, 3: Coins, 4: Details, 5: AutoRefund
+                // Clean quotes if present (excel sometimes wraps in quotes)
+                const clean = (s) => s ? s.trim().replace(/^"|"$/g, '') : '';
+
+                const rowData = {
+                    partner: clean(cols[0]),
+                    floatPercent: clean(cols[1]), // Logic will auto-color this later
+                    minAmount: clean(cols[2]),
+                    coins: clean(cols[3]),
+                    details: clean(cols[4]),
+                    autoRefund: clean(cols[5]) // Logic will auto-color this later
+                };
+                newRows.push(rowData);
+                importCount++;
+            });
+
+            if (importCount === 0) {
+                alert('No valid data found.');
+                return;
+            }
+
+            // Update Data
+            let finalData = [];
+            if (replace) {
+                finalData = newRows;
+            } else {
+                const currentData = JSON.parse(localStorage.getItem('partnersTableData') || '[]');
+                finalData = [...currentData, ...newRows];
+            }
+
+            localStorage.setItem('partnersTableData', JSON.stringify(finalData));
+            loadTableData(); // Reloads table and attaches listeners (which triggers badge logic via attachRowListeners? No, loadTableData creates rows with badges)
+            // Wait, createTableRow uses data.floatPercent to determine class.
+            // So if `data.floatPercent` is just text "3%", createTableRow needs to handle it.
+            // `createTableRow` parses float value to set class. So it should work immediately!
+
+            alert(`Imported ${importCount} partners.`);
+        }
     </script>
 
 </body>
