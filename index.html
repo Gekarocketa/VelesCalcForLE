@@ -1752,6 +1752,19 @@
             <input type="file" id="importFile" accept=".json,.txt" style="display: none;" onchange="importConfig(this)">
         </div>
 
+        <div class="settings-row"
+            style="justify-content: center; margin-bottom: 10px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+            <button class="ghost-btn" onclick="hardRefresh()"
+                style="color: var(--text-secondary); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; opacity: 0.8;">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                    <path d="M23 4v6h-6"></path>
+                    <path d="M1 20v-6h6"></path>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Update App / Clear Cache
+            </button>
+        </div>
+
         <div class="settings-info">
             <div class="info-icon">i</div>
             <div class="info-tooltip">
@@ -2354,6 +2367,11 @@
             const overlay = document.getElementById('modalOverlay');
             modal.classList.toggle('hidden');
             overlay.classList.toggle('hidden');
+        }
+
+        function hardRefresh() {
+            // Force reload by appending/updating timestamp
+            window.location.href = window.location.pathname + '?t=' + new Date().getTime();
         }
         // -- End Settings State --
 
