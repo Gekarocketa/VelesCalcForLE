@@ -74,7 +74,7 @@
             transition: transform 0.3s ease;
             z-index: 10;
             z-index: 10;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 24px 24px rgba(0, 0, 0, 0.4);
         }
 
         .help-panel.hidden {
@@ -434,7 +434,7 @@
             border-radius: 24px;
             width: 650px;
             flex-shrink: 0;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2), 0 0 1px 1px var(--border-color);
+            box-shadow: 0 24px 24px rgba(0, 0, 0, 0.2), 0 0 1px 1px var(--border-color);
             display: flex;
             flex-direction: column;
         }
@@ -635,7 +635,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 24px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.08);
         }
 
         .history-header {
@@ -824,7 +824,7 @@
             border-radius: 20px;
             padding: 24px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 24px 40px rgba(0, 0, 0, 0.5);
             z-index: 100;
             opacity: 1;
             transition: opacity 0.2s, transform 0.2s;
@@ -982,15 +982,25 @@
             justify-content: space-between;
             align-items: center;
             width: 650px;
-            /* Match calculator width */
-            margin-bottom: 20px;
             position: relative;
-            height: 50px;
-            /* Fixed height to anchor items */
+
+            /* Animation Props */
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateY(-10px);
         }
 
-        .header-controls.hidden {
-            display: none;
+        .header-controls.visible {
+            max-height: 70px;
+            /* Sufficient height including shadows/padding if any */
+            opacity: 1;
+            margin-bottom: 20px;
+            transform: translateY(0);
+            /* overflow: visible;  <-- Optional: if tooltips get clipped, enables them after slide. 
+               For now, keeping hidden prevents paint issues during transit. */
         }
 
         /* Center Title Absolute Positioning */
@@ -1058,71 +1068,101 @@
         }
 
         /* History Container (Narrow) */
+        /* History Container (Flex Wrapper) */
         .history-container {
             display: flex;
-            gap: 16px;
-            width: 520px;
-            /* Default width */
-            transition: width 0.3s ease;
-        }
-
-        .history-container.expanded {
-            width: 560px;
-            /* Slightly wider when BTC widget is open */
+            gap: 0;
+            /* Removing gap to handle spacing via animated margins on children */
+            margin-top: 55px;
+            align-items: flex-start;
         }
 
         .history-panel {
-            flex: 1;
-            transition: all 0.3s ease;
-            min-width: 0;
-            /* Allow Flex Shrink */
-        }
+            /* Fixed Width & Animation */
+            width: 520px;
+            /* Default Wide State */
+            flex-shrink: 0;
+            transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow: hidden;
+            /* Hide content during shrink */
 
-        /* Specific override when widget is visible */
-        .history-container.expanded .history-panel {
-            width: 350px;
-            /* Target ~240px */
-            flex: none;
-            /* Fixed width */
-        }
-
-        /* Ensure History Text Wraps */
-        .history-expr {
-            white-space: normal;
-            word-break: break-all;
-            line-height: 1.4;
-        }
-
-        .history-res {
-            white-space: normal;
-            word-break: break-all;
-        }
-
-        /* BTC Widget */
-        .btc-widget {
-            width: 280px;
+            /* Visuals */
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
+            padding: 24px;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 24px 24px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.08);
+        }
+
+        /* Compact Mode (Active when BTC Widget is open) */
+        .history-panel.compact {
+            width: 360px;
+        }
+
+        /* Ensure History Text Wraps/Truncates */
+        .history-expr {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.95em;
+            color: #fff;
+            font-weight: 500;
+            font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
+        }
+
+        .history-res {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--secondary-accent);
+            font-weight: 700;
+            font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
+        }
+
+        /* BTC Widget */
+        /* BTC Widget */
+        .btc-widget {
+            /* Collapsed State */
+            width: 280px;
+            max-width: 0;
+            padding: 0;
+            margin-left: 0;
+            border: none;
+            opacity: 0;
+            overflow: hidden;
+            white-space: nowrap;
+
+            /* Visuals */
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
             display: flex;
             flex-direction: column;
             gap: 16px;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-            opacity: 0;
-            transform: translateX(-20px);
+            box-shadow: 0 24px 24px rgba(0, 0, 0, 0.4);
             pointer-events: none;
-            display: none;
+            height: fit-content;
+            align-self: flex-start;
+
+            /* Transition */
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateX(-20px);
         }
 
         .btc-widget.visible {
-            display: flex;
+            max-width: 280px;
+            padding: 20px;
+            margin-left: 16px;
+            /* Replaces the parent gap */
+            border: 1px solid var(--border-color);
             opacity: 1;
             transform: translateX(0);
             pointer-events: auto;
-            animation: slideInRight 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
         .btc-header {
@@ -2268,17 +2308,16 @@
         // -- End Settings State --
 
         // Click to Copy Logic
+        // Click to Copy Logic
         const displayContainer = document.getElementById('displayContainer');
         const tooltip = document.getElementById('copyTooltip');
         let tooltipTimeout;
 
-        displayContainer.addEventListener('click', () => {
-            if (!isAutoCopyEnabled) return;
+        // Helper: Copy Text to Clipboard
+        function copyToClipboard(text) {
+            if (!text) return;
 
-            const textToCopy = display.value;
-            if (!textToCopy) return;
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
+            navigator.clipboard.writeText(text).then(() => {
                 // Show Tooltip
                 tooltip.classList.add('visible');
 
@@ -2294,6 +2333,10 @@
             }).catch(err => {
                 console.error('Failed to copy: ', err);
             });
+        }
+
+        displayContainer.addEventListener('click', () => {
+            if (isAutoCopyEnabled) copyToClipboard(display.value);
         });
 
         // --- Pro Features Logic ---
@@ -2313,19 +2356,21 @@
         function applyProFeatures() {
             const headerControls = document.getElementById('headerControls');
             const btcWidget = document.getElementById('btcWidget');
-            const historyContainer = document.querySelector('.history-container');
+            const historyPanel = document.getElementById('historyPanel');
             const proToggle = document.getElementById('proFeaturesToggle');
 
             if (proToggle) proToggle.checked = isProFeaturesEnabled;
 
-            if (isProFeaturesEnabled) {
-                headerControls.classList.remove('hidden');
-                btcWidget.classList.remove('hidden');
+            // Ensure any inline display styles from previous versions are cleared
+            btcWidget.style.display = '';
 
-                setTimeout(() => {
-                    btcWidget.classList.add('visible');
-                    historyContainer.classList.add('expanded');
-                }, 50);
+            if (isProFeaturesEnabled) {
+                // Show Header & Widget
+                headerControls.classList.add('visible');
+
+                // Animate: History Shrink & Widget Expand (Simultaneous)
+                historyPanel.classList.add('compact');
+                btcWidget.classList.add('visible');
 
                 if (!isBtcLocked) {
                     startBtcPolling();
@@ -2333,13 +2378,12 @@
                     if (btcPrice === 0) fetchBtcPrice();
                 }
             } else {
-                btcWidget.classList.remove('visible');
-                historyContainer.classList.remove('expanded');
+                // Hide Header & Widget
+                headerControls.classList.remove('visible');
 
-                setTimeout(() => {
-                    headerControls.classList.add('hidden');
-                    btcWidget.classList.add('hidden');
-                }, 300);
+                // Animate: History Expand & Widget Collapse
+                historyPanel.classList.remove('compact');
+                btcWidget.classList.remove('visible');
 
                 stopBtcPolling();
             }
@@ -2656,6 +2700,24 @@
                 return;
             }
 
+            // Global Copy (Ctrl+C / Cmd+C)
+            if ((e.ctrlKey || e.metaKey) && code === 'KeyC') {
+                // If user has selected text manually (e.g. in table), let browser handle it.
+                const selection = window.getSelection().toString();
+                if (selection && selection.length > 0) return;
+
+                // Fallback: Copy Calculator Display
+                e.preventDefault();
+                copyToClipboard(display.value);
+                return;
+            }
+
+            // Shortcut Safety:
+            // Stop here if any modifier is held (Ctrl/Alt/Meta). 
+            // This prevents "Type-to-Focus" from blocking browser shortcuts (e.g. Ctrl+R, Ctrl+Shift+I).
+            // We placed this AFTER 'Ctrl+C' because we explicitly want to handle that one.
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+
             // Platform-agnostic Hotkey Bindings
 
             // Delta (KeyD)
@@ -2753,6 +2815,47 @@
                 toggleSettingsModal();
                 return;
             }
+        });
+
+        // --- Global Paste Listener ---
+        window.addEventListener('paste', (e) => {
+            const target = e.target;
+            const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+            // 1. If user is pasting into a specific field (Table, Settings, etc.), let browser handle it.
+            //    Exception: If pasting into the main #display, we might want to sanitize, but default behavior is usually fine.
+            //    Actually, let's intercept paste into #display too, to ensure we sanitize garbage.
+            if (isInput && target.id !== 'display') return;
+
+            // 2. Intercept Paste
+            e.preventDefault();
+
+            // Get text
+            const text = (e.clipboardData || window.clipboardData).getData('text');
+            if (!text) return;
+
+            // 3. Sanitize (Allow digits, math operators, dots, commas)
+            // Remove letters and other garbage.
+            // Valid chars: 0-9 . , + - * / % ÷ × ( ) Δ
+            const validCharsRegex = /[^0-9+\-*/%().,÷×Δ\s]/g;
+            let cleanText = text.replace(validCharsRegex, '');
+
+            // Normalize
+            cleanText = cleanText.replace(/,/g, '.').replace(/÷/g, '/').replace(/×/g, '*');
+
+            // 4. Insert into Display
+            // If focus is not on display, focus it first.
+            if (document.activeElement !== display) {
+                display.focus();
+                // If we forced focus, maybe we want to append? Or replace?
+                // Standard calc behavior: Append.
+                // Move cursor to end if it wasn't focused.
+                const len = display.value.length;
+                display.setSelectionRange(len, len);
+            }
+
+            // Insert at cursor
+            inputSymbol(cleanText);
         });
 
         // --- Import / Export Logic ---
