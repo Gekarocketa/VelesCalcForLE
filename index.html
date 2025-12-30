@@ -2093,28 +2093,68 @@
         }
 
         function parseCryptoNumber(numStr) {
+            // 1. Remove all spaces (1 000 -> 1000)
             let clean = numStr.trim().replace(/\s/g, '');
+
+            // Safety check: if no numbers, return as is
             if (!/[\d]/.test(clean)) return clean;
 
-            const lastDot = clean.lastIndexOf('.');
-            const lastComma = clean.lastIndexOf(',');
+            const hasDot = clean.includes('.');
+            const hasComma = clean.includes(',');
 
-            if (lastDot > -1 && lastComma > -1) {
-                if (lastDot > lastComma) {
+            // SCENARIO 1: Mixed separators (The most common crypto format)
+            if (hasDot && hasComma) {
+                const lastDotIndex = clean.lastIndexOf('.');
+                const lastCommaIndex = clean.lastIndexOf(',');
+
+                if (lastDotIndex > lastCommaIndex) {
+                    // Dot is last ("1,000.50") -> Comma is thousand sep
                     return clean.replace(/,/g, '');
                 } else {
+                    // Comma is last ("1.000,50") -> Dot is thousand sep
                     return clean.replace(/\./g, '').replace(/,/g, '.');
                 }
             }
-            if (lastComma > -1) {
+
+            // SCENARIO 2: Only Commas
+            if (hasComma) {
                 const parts = clean.split(',');
-                if (parts.length > 2) return clean.replace(/,/g, '');
-                return clean.replace(/,/g, '.');
+                // If multiple commas exist, use heuristic
+                if (parts.length > 2) {
+                    const lastSegment = parts[parts.length - 1];
+                    // HEURISTIC: If last segment is NOT 3 digits, treat last comma as decimal
+                    // Example: "1,000,50" -> 1000.50 | "1,000,000" -> 1000000
+                    if (lastSegment.length !== 3) {
+                        // Replace last comma with dot, remove others
+                        return clean.replace(/,(?=[^,]*$)/, '.').replace(/,/g, '');
+                    }
+                    // Else assume all are thousand separators
+                    return clean.replace(/,/g, '');
+                } else {
+                    // Single comma: "1000,50" -> 1000.50
+                    return clean.replace(/,/g, '.');
+                }
             }
-            if (lastDot > -1) {
+
+            // SCENARIO 3: Only Dots
+            if (hasDot) {
                 const parts = clean.split('.');
-                if (parts.length > 2) return clean.replace(/\./g, '');
+                // If multiple dots exist, use heuristic
+                if (parts.length > 2) {
+                    const lastSegment = parts[parts.length - 1];
+                    // HEURISTIC: If last segment is NOT 3 digits, treat last dot as decimal
+                    // Example: "1.000.50" -> 1000.50 | "1.000.000" -> 1000000
+                    if (lastSegment.length !== 3) {
+                        // Keep last dot, remove others. 
+                        // Logic: Replace last dot with placeholder, remove all dots, revert placeholder
+                        return clean.replace(/\.(?=[^.]*$)/, 'TEMP_DOT').replace(/\./g, '').replace('TEMP_DOT', '.');
+                    }
+                    // Else assume all are thousand separators
+                    return clean.replace(/\./g, '');
+                }
+                // Single dot: "1000.50" -> Keep as is
             }
+
             return clean;
         }
 
