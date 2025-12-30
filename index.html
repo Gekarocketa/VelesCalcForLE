@@ -2048,20 +2048,30 @@
             if (display.value === '0' && !['+', '-', '*', '/', '%'].includes(symbol)) {
                 display.value = symbol;
                 display.focus();
-                // Move cursor to after the new symbol
                 display.setSelectionRange(symbol.length, symbol.length);
-            } else {
-                // Insert at cursor position
-                const val = display.value;
-                const before = val.substring(0, start);
-                const after = val.substring(end);
-
-                display.value = before + symbol + after;
-
-                display.focus();
-                const newPos = start + symbol.length;
-                display.setSelectionRange(newPos, newPos);
+                return;
             }
+
+            // Validation: Prevent silly duplicates (e.g. ".." or ",,")
+            // But allow mixed separators (e.g. "1.000,50" -> ".,")
+            const val = display.value;
+            if (start > 0) {
+                const prevChar = val[start - 1];
+                if ((symbol === '.' && prevChar === '.') || (symbol === ',' && prevChar === ',')) {
+                    // Ignore double separator
+                    return;
+                }
+            }
+
+            // Insert at cursor position
+            const before = val.substring(0, start);
+            const after = val.substring(end);
+
+            display.value = before + symbol + after;
+
+            display.focus();
+            const newPos = start + symbol.length;
+            display.setSelectionRange(newPos, newPos);
         }
 
         function clearDisplay() {
@@ -2793,7 +2803,7 @@
 
                 // Normalize symbols
                 let char = key;
-                if (char === ',') char = '.';
+                // REMOVED: if (char === ',') char = '.';  <-- Allow commas!
                 if (char === '÷') char = '/';
                 if (char === '×') char = '*';
 
@@ -2881,7 +2891,8 @@
             let cleanText = text.replace(validCharsRegex, '');
 
             // Normalize
-            cleanText = cleanText.replace(/,/g, '.').replace(/÷/g, '/').replace(/×/g, '*');
+            // REMOVED: cleanText = cleanText.replace(/,/g, '.'); <-- Allow commas!
+            cleanText = cleanText.replace(/÷/g, '/').replace(/×/g, '*');
 
             // 4. Insert into Display
             // If focus is not on display, focus it first.
