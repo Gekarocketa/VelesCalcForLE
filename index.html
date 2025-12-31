@@ -1816,6 +1816,13 @@
                 <span class="slider"></span>
             </label>
         </div>
+        <div class="settings-row">
+            <span class="settings-label">UI Sounds 🔊</span>
+            <label class="switch">
+                <input type="checkbox" id="soundToggle" onchange="toggleSound(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
         <div class="settings-row" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 1.2rem;">Energy Saving ⚡</span>
@@ -2145,6 +2152,7 @@
         });
 
         function inputSymbol(symbol) {
+            playSound('click'); // Sound Hook
             const start = display.selectionStart;
             const end = display.selectionEnd;
 
@@ -2179,11 +2187,13 @@
         }
 
         function clearDisplay() {
+            playSound('action'); // Sound Hook
             display.value = '';
             focusAndMoveCursorToEnd();
         }
 
         function deleteLast() {
+            playSound('action'); // Sound Hook
             const start = display.selectionStart;
             const end = display.selectionEnd;
             const val = display.value;
@@ -2279,6 +2289,7 @@
         }
 
         function calculate() {
+            playSound('click'); // Sound Hook (Enter/Equals)
             let rawInput = display.value;
             if (!rawInput) return;
 
@@ -2373,6 +2384,7 @@
                 toggleText.textContent = 'Hide';
                 floatingControls.classList.add('panel-open-state');
             }
+            playSound('ui'); // Sound Hook
         }
 
         function addToHistory(expression, result) {
@@ -2422,9 +2434,11 @@
             // Init UI elements based on state
             const autoCopyToggleEl = document.getElementById('autoCopyToggle');
             const macButtonsToggleEl = document.getElementById('macButtonsToggle');
+            const soundToggleEl = document.getElementById('soundToggle');
 
             if (autoCopyToggleEl) autoCopyToggleEl.checked = isAutoCopyEnabled;
             if (macButtonsToggleEl) macButtonsToggleEl.checked = isMacButtons;
+            if (soundToggleEl) soundToggleEl.checked = isSoundEnabled;
 
             applySettings();
 
@@ -2441,6 +2455,77 @@
 
         let isMacButtons = JSON.parse(localStorage.getItem('calcMacButtons'));
         if (isMacButtons === null) isMacButtons = false;
+
+        let isSoundEnabled = JSON.parse(localStorage.getItem('calcSoundEnabled'));
+        if (isSoundEnabled === null) isSoundEnabled = false;
+
+        // --- Sound Engine (Web Audio API) ---
+        let audioCtx = null;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Lazy load audio on first interaction
+        ['click', 'keydown'].forEach(event => {
+            document.addEventListener(event, initAudioContext, { once: true });
+        });
+
+        function playSound(type) {
+            if (!isSoundEnabled || isPotatoMode || !audioCtx) return;
+
+            // Simple synthesized sounds
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                // High pitch, short (Typing)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'action') {
+                // Lower pitch, thocky (Delete, AC) - Reduced Volume (Was 0.15)
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'ui') {
+                // Soft aerie blip (Toggles)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+        }
+
+        function toggleSound(checkbox) {
+            isSoundEnabled = checkbox.checked;
+            localStorage.setItem('calcSoundEnabled', JSON.stringify(isSoundEnabled));
+            if (isSoundEnabled) initAudioContext();
+            playSound('ui');
+        }
 
         function applySettings() {
             document.body.setAttribute('data-btn-style', isMacButtons ? 'mac' : 'default');
@@ -2463,6 +2548,7 @@
             const overlay = document.getElementById('modalOverlay');
             modal.classList.toggle('hidden');
             overlay.classList.toggle('hidden');
+            playSound('ui'); // Sound Hook
         }
 
         function hardRefresh() {
@@ -2509,6 +2595,7 @@
         }
 
         displayContainer.addEventListener('click', () => {
+            playSound('ui'); // Sound Hook
             if (isAutoCopyEnabled) copyToClipboard(display.value);
         });
 
@@ -2521,6 +2608,7 @@
         let isBtcLocked = JSON.parse(localStorage.getItem('calcBtcLock')) || false;
 
         function toggleProFeatures(checkbox) {
+            playSound('ui'); // Sound Hook
             isProFeaturesEnabled = checkbox.checked;
             localStorage.setItem('calcProFeatures', JSON.stringify(isProFeaturesEnabled));
             applyProFeatures();
@@ -2568,6 +2656,7 @@
         // We need to hook into the global toggleMacButtons to re-apply theme to new elements
         const originalToggleMac = toggleMacButtons;
         toggleMacButtons = function (checkbox) {
+            playSound('ui'); // Sound Hook
             originalToggleMac(checkbox);
             applyMacThemeToNewElements();
         };
@@ -2796,6 +2885,7 @@
         let isPotatoMode = JSON.parse(localStorage.getItem('calcPotatoMode')) || false;
 
         function togglePotatoMode(checkbox) {
+            playSound('ui'); // Sound Hook
             isPotatoMode = checkbox.checked;
             localStorage.setItem('calcPotatoMode', JSON.stringify(isPotatoMode));
             applyPotatoMode();
@@ -2878,6 +2968,7 @@
                 }
 
                 calculate();
+                playSound('ui'); // Sound Hook (Enter)
                 return;
             }
 
@@ -2893,6 +2984,7 @@
                 if (!isTyping || target.id === 'display') {
                     e.preventDefault();
                     clearDisplay();
+                    playSound('action'); // Sound Hook (Escape)
                 }
                 return;
             }
@@ -2925,6 +3017,7 @@
 
                 e.preventDefault();
                 inputSymbol('Δ');
+                playSound('ui'); // Sound Hook (Delta)
                 return;
             }
 
@@ -2950,6 +3043,7 @@
                 // Special mapping for keys that calculate
                 if (key === '=' || key === 'Enter') {
                     calculate();
+                    playSound('ui'); // Sound Hook
                     return;
                 }
 
@@ -2960,6 +3054,7 @@
                 if (char === '×') char = '*';
 
                 inputSymbol(char);
+                playSound('click'); // Sound Hook (Typing)
                 return;
             }
 
@@ -2968,6 +3063,7 @@
                 e.preventDefault();
                 display.focus();
                 deleteLast();
+                playSound('action'); // Sound Hook (Backspace)
                 return;
             }
 
@@ -2978,6 +3074,7 @@
                 if (checkbox) {
                     checkbox.checked = !checkbox.checked;
                     togglePotatoMode(checkbox);
+                    playSound('ui'); // Sound Hook
                 }
                 return;
             }
@@ -2989,6 +3086,7 @@
                 if (checkbox) {
                     checkbox.checked = !checkbox.checked;
                     toggleProFeatures(checkbox);
+                    playSound('ui'); // Sound Hook
                 }
                 return;
             }
@@ -3000,6 +3098,7 @@
                 if (checkbox) {
                     checkbox.checked = !checkbox.checked;
                     toggleMacButtons(checkbox);
+                    playSound('ui'); // Sound Hook
                 }
                 return;
             }
@@ -3008,6 +3107,7 @@
             if (code === 'KeyH') {
                 e.preventDefault();
                 toggleHelpPanel();
+                playSound('ui'); // Sound Hook
                 return;
             }
 
@@ -3015,6 +3115,7 @@
             if (code === 'KeyO') {
                 e.preventDefault();
                 toggleSettingsModal();
+                playSound('ui'); // Sound Hook
                 return;
             }
         });
@@ -3070,7 +3171,8 @@
                     isProFeaturesEnabled,
                     isMacButtons,
                     isAutoCopyEnabled,
-                    isBtcLocked
+                    isBtcLocked,
+                    isSoundEnabled
                 },
                 partnersTableData: JSON.parse(localStorage.getItem('partnersTableData') || '[]'),
                 history: historyData
@@ -3105,6 +3207,7 @@
                                 localStorage.setItem('calcMacButtons', JSON.stringify(config.settings.isMacButtons));
                                 localStorage.setItem('calcAutoCopy', JSON.stringify(config.settings.isAutoCopyEnabled));
                                 localStorage.setItem('calcBtcLock', JSON.stringify(config.settings.isBtcLocked));
+                                localStorage.setItem('calcSoundEnabled', JSON.stringify(config.settings.isSoundEnabled));
                             }
                             // Restore Data
                             if (config.partnersTableData) {
