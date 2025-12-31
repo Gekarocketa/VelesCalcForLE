@@ -140,6 +140,7 @@
             justify-content: center;
         }
 
+
         .help-header {
             display: flex;
             justify-content: space-between;
@@ -1165,6 +1166,80 @@
             pointer-events: auto;
         }
 
+        /* --- New Year Mode Easter Egg (Restored) --- */
+
+        /* Snow Container */
+        #snowContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+
+        body.new-year-mode #snowContainer {
+            display: block;
+        }
+
+        /* Snowflake Style */
+        .snowflake {
+            position: absolute;
+            top: -50px;
+            color: #FFF;
+            user-select: none;
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        /* Falling Animation */
+        @keyframes fall {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(110vh);
+            }
+        }
+
+        /* Santa Hat on 'L' */
+        .brand-letter {
+            position: relative;
+            display: inline-block;
+        }
+
+        body.new-year-mode .brand-letter::before {
+            content: '🎅';
+            /* Santa Hat Emoji */
+            position: absolute;
+            top: -10px;
+            /* Adjust to sit on top */
+            left: -60px;
+            /* Adjust to tilt left */
+            font-size: 2.5rem;
+            transform: rotate(-20deg);
+            z-index: 10;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+            animation: hatBounce 2s infinite ease-in-out;
+        }
+
+        @keyframes hatBounce {
+
+            0%,
+            100% {
+                transform: rotate(-20deg) translateY(0);
+            }
+
+            50% {
+                transform: rotate(-20deg) translateY(-5px);
+            }
+        }
+    </style>
+    <style>
         .btc-header {
             display: flex;
             justify-content: space-between;
@@ -1582,7 +1657,8 @@
         <div class="center-group">
             <!-- Calculator Column -->
             <div class="calculator-column">
-                <h1 class="app-title"><span class="title-lets">Lets</span><span class="title-exchange">Exchange</span>
+                <h1 class="app-title"><span class="title-lets"><span class="brand-letter">L</span>ets</span><span
+                        class="title-exchange">Exchange</span>
                 </h1>
 
                 <div class="header-controls hidden" id="headerControls">
@@ -1733,6 +1809,13 @@
                 <span class="slider"></span>
             </label>
         </div>
+        <div class="settings-row">
+            <span class="settings-label">Christmas Mode ❄️</span>
+            <label class="switch">
+                <input type="checkbox" id="newYearToggle" onchange="toggleNewYearMode(this)">
+                <span class="slider"></span>
+            </label>
+        </div>
         <div class="settings-row" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 1.2rem;">Energy Saving ⚡</span>
@@ -1784,7 +1867,15 @@
         </div>
     </div>
 
+    <div id="snowContainer"></div>
+
     <script>
+        // --- URL Cleaner (Post-Reset) ---
+        if (window.location.search.includes('v=')) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+
         const display = document.getElementById('display');
         const historyList = document.getElementById('historyList');
         const partnersTable = document.querySelector('.partners-table tbody');
@@ -3108,11 +3199,57 @@
             '%cДарова! это Veles, слеплено все из говна и палок XD, ничего сложного тут не использовалось, практически ванила.\nВсем кискам пис ✌️',
             'background: #222; color: #bada55; padding: 10px; border-radius: 5px; font-size: 14px; font-family: "Segoe UI", sans-serif; border: 1px solid #444;'
         );
+
+        // --- New Year Mode Logic ---
+        const snowContainer = document.getElementById('snowContainer');
+        const newYearToggle = document.getElementById('newYearToggle');
+
+        // Initialize from LocalStorage
+        const savedNewYearMode = localStorage.getItem('isNewYearMode') === 'true';
+        if (savedNewYearMode) {
+            document.body.classList.add('new-year-mode');
+            if (newYearToggle) newYearToggle.checked = true;
+            createSnowflakes();
+        }
+
+        function toggleNewYearMode(checkbox) {
+            const isEnabled = checkbox.checked;
+
+            if (isEnabled) {
+                document.body.classList.add('new-year-mode');
+                // Only create snow if not already created (check if empty)
+                if (snowContainer.innerHTML === '') {
+                    createSnowflakes();
+                }
+            } else {
+                document.body.classList.remove('new-year-mode');
+                // Optional: We could clear snowContainer to stop animation load, but standard practice is just hiding it via CSS.
+                // CSS: body.new-year-mode #snowContainer { display: block; } handles visibility.
+            }
+
+            localStorage.setItem('isNewYearMode', isEnabled);
+        }
+
+        function createSnowflakes() {
+            // Check if already created to avoid duplicates
+            if (snowContainer.innerHTML !== '') return;
+
+            // Create 50 snowflakes
+            for (let i = 0; i < 50; i++) {
+                const flake = document.createElement('div');
+                flake.classList.add('snowflake');
+                flake.textContent = '❄';
+                flake.style.left = Math.random() * 100 + 'vw';
+                // Random duration between 3s and 8s
+                flake.style.animationDuration = (Math.random() * 5 + 3) + 's';
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                flake.style.opacity = Math.random() * 0.7 + 0.3;
+                flake.style.animationDelay = Math.random() * 5 + 's';
+                snowContainer.appendChild(flake);
+            }
+        }
     </script>
 
-    <div class="version-label"
-        style="position: fixed; top: 10px; right: 10px; color: var(--text-color); opacity: 0.3; font-size: 5rem; pointer-events: none; z-index: 9999;">
-        🎄🎄🎄</div>
 </body>
 
 </html>
