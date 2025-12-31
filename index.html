@@ -2546,9 +2546,9 @@
                 btcWidget.classList.add('visible');
 
                 if (!isBtcLocked) {
-                    startBtcPolling();
+                    setTimeout(startBtcPolling, 500); // Small delay on load
                 } else {
-                    if (btcPrice === 0) fetchBtcPrice();
+                    if (btcPrice === 0) setTimeout(fetchBtcPrice, 500);
                 }
             } else {
                 // Hide Header & Widget
@@ -2696,7 +2696,13 @@
 
         async function fetchBtcPrice() {
             try {
-                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+                // 5 Second Timeout Race
+                const fetchPromise = fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                );
+
+                const response = await Promise.race([fetchPromise, timeoutPromise]);
                 if (!response.ok) throw new Error('Network response was not ok');
 
                 const data = await response.json();
@@ -2773,6 +2779,7 @@
         }
 
         function refreshBtcPrice() {
+            if (document.activeElement) document.activeElement.blur(); // Fix Input Freeze
             fetchBtcPrice();
             const btn = document.querySelector('button[onclick="refreshBtcPrice()"] svg');
             if (btn) {
@@ -2932,6 +2939,11 @@
 
             // Auto-Focus for Math keys
             if (/^[0-9+\-*/%().=,÷×]$/.test(key)) {
+                // Fix: Blur any focused button so global generic input works
+                if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
+                    document.activeElement.blur();
+                }
+
                 e.preventDefault();
                 display.focus(); // Ensure focus
 
