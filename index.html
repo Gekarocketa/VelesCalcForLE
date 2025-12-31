@@ -1674,7 +1674,7 @@
                 <div class="calculator">
                     <div class="display-container" id="displayContainer">
                         <div id="copyTooltip" class="copy-tooltip">Copied!</div>
-                        <input type="text" id="display" placeholder="0" autocomplete="off" autofocus>
+                        <input type="text" id="display" placeholder="0" autocomplete="off">
                     </div>
 
                     <div class="buttons">
@@ -1810,7 +1810,7 @@
             </label>
         </div>
         <div class="settings-row">
-            <span class="settings-label">Christmas Mode ❄️</span>
+            <span class="settings-label">Let it snow ❄️</span>
             <label class="switch">
                 <input type="checkbox" id="newYearToggle" onchange="toggleNewYearMode(this)">
                 <span class="slider"></span>
@@ -2418,7 +2418,6 @@
         }
 
         window.addEventListener('load', () => {
-            display.focus();
 
             // Init UI elements based on state
             const autoCopyToggleEl = document.getElementById('autoCopyToggle');
@@ -3253,4 +3252,3 @@
 </body>
 
 </html>
-
