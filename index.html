@@ -2427,6 +2427,12 @@
             if (macButtonsToggleEl) macButtonsToggleEl.checked = isMacButtons;
 
             applySettings();
+
+            // FORCE BLUR on everything to ensure "Global Type-to-Focus" works
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+            window.focus(); // Focus the window itself
         });
 
         // -- Settings State Management --
@@ -2688,24 +2694,31 @@
             if (btcFetchInterval) clearInterval(btcFetchInterval);
         }
 
-        function fetchBtcPrice() {
-            fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT')
-                .then(res => res.json())
-                .then(data => {
-                    btcPrice = parseFloat(data.price);
-                    document.getElementById('btcPriceDisplay').textContent = `$${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        async function fetchBtcPrice() {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+                if (!response.ok) throw new Error('Network response was not ok');
 
-                    // Update the OTHER field based on active element
-                    if (document.activeElement === usdtInput) {
-                        convertFromUsdt();
-                    } else {
-                        convertFromBtc();
-                    }
+                const data = await response.json();
+                btcPrice = parseFloat(data.price);
+
+                const displayEl = document.getElementById('btcPriceDisplay');
+                if (displayEl) {
+                    displayEl.textContent = `$${btcPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                     applyMacThemeToNewElements();
-                })
-                .catch(err => {
-                    console.error('Error', err);
-                });
+                }
+
+                // Update inputs if active
+                if (document.activeElement === document.getElementById('usdtInput')) {
+                    convertFromUsdt();
+                } else {
+                    convertFromBtc();
+                }
+            } catch (error) {
+                console.warn('BTC Fetch Error:', error);
+                const displayEl = document.getElementById('btcPriceDisplay');
+                if (displayEl) displayEl.textContent = "Update Failed";
+            }
         }
 
         const btcInput = document.getElementById('btcInput');
