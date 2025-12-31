@@ -1761,7 +1761,7 @@
                     <path d="M1 20v-6h6"></path>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                 </svg>
-                Update App / Clear Cache
+                Reset Data & Update
             </button>
         </div>
 
@@ -2370,11 +2370,17 @@
         }
 
         function hardRefresh() {
-            // Aggressive Force Update
-            const url = new URL(window.location.href);
-            url.searchParams.set('v', Date.now()); // Add unique version param
-            window.history.replaceState(null, null, url); // Update URL without reloading yet
-            window.location.reload(true); // Force reload from server
+            // Factory Reset Logic
+            if (confirm("This will clear ALL saved data (Partners, Settings) to fix bugs and download the latest version.\n\nContinue?")) {
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Aggressive Force Update
+                const url = new URL(window.location.href);
+                url.searchParams.set('v', Date.now()); // Add unique version param
+                window.history.replaceState(null, null, url); // Update URL without reloading yet
+                window.location.reload(true); // Force reload from server
+            }
         }
         // -- End Settings State --
 
