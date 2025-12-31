@@ -2743,12 +2743,24 @@
         applyPotatoMode();
 
         // --- Global Hotkey Management ---
+        // --- Global Hotkey Management ---
         document.addEventListener('keydown', (e) => {
             const code = e.code;
             const target = e.target;
-            // 1. PRIORITY: Enter -> Calculate (Always)
+
+            // 1. PRIORITY: Enter -> Calculate (Always, unless editing text)
             if (code === 'Enter') {
+                // Exception: If user is typing inside the Help Table (contenteditable) or a Textarea, let Enter create a new line.
+                if (target.isContentEditable || target.tagName === 'TEXTAREA') return;
+
+                // Otherwise, ALWAYS prevent default and calculate
                 e.preventDefault();
+
+                // CRITICAL FIX: If the focus is on a button, remove focus to stop browser interference (double firing)
+                if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
+                    document.activeElement.blur();
+                }
+
                 calculate();
                 return;
             }
@@ -3093,8 +3105,8 @@
     </script>
 
     <div class="version-label"
-        style="position: fixed; top: 10px; right: 10px; color: var(--text-color); opacity: 0.1; font-size: 0.8rem; pointer-events: none; z-index: 9999;">
-        v2.0</div>
+        style="position: fixed; top: 10px; right: 10px; color: var(--text-color); opacity: 0.3; font-size: 5rem; pointer-events: none; z-index: 9999;">
+        🎄🎄🎄</div>
 </body>
 
 </html>
