@@ -1810,13 +1810,6 @@
             </label>
         </div>
         <div class="settings-row">
-            <span class="settings-label">Sound Effects 🔊</span>
-            <label class="switch">
-                <input type="checkbox" id="soundToggle" onchange="toggleSound(this)">
-                <span class="slider"></span>
-            </label>
-        </div>
-        <div class="settings-row">
             <span class="settings-label">Christmas Mode ❄️</span>
             <label class="switch">
                 <input type="checkbox" id="newYearToggle" onchange="toggleNewYearMode(this)">
@@ -2145,20 +2138,6 @@
         }
 
         display.addEventListener('keydown', function (e) {
-            // Play sound for all keyboard inputs (logic is simpler here as this listener catches focused inputs)
-            // But we want GLOBAL support?
-            // Wait, the user asked for Global Keyboard Support.
-            // The listener at line ~2928 is `display.addEventListener('keydown' ...)` ?
-            // Let's check view_file output.
-            // Result 1559 showed: `display.addEventListener('keydown', function (e) {` at line 2139 (in full file context)
-            // Wait, I requested view of 2870-2890 previously, but that was potato mode.
-            // I need to find where the global listener is.
-            // The file has `display.addEventListener` around line 2139 (old count) or 2928 (new count?).
-
-            // Actually, I should add a NEW global listener if one doesn't exist, OR modify the existing one if it covers document.
-            // The user request said "Update the global keydown listener".
-            // Let's find "document.addEventListener('keydown'"
-
             if (e.key === 'Backspace') {
                 e.preventDefault();
                 deleteLast();
@@ -2166,7 +2145,6 @@
         });
 
         function inputSymbol(symbol) {
-            playClickSound();
             const start = display.selectionStart;
             const end = display.selectionEnd;
 
@@ -2201,13 +2179,11 @@
         }
 
         function clearDisplay() {
-            playClickSound();
             display.value = '';
             focusAndMoveCursorToEnd();
         }
 
         function deleteLast() {
-            playClickSound();
             const start = display.selectionStart;
             const end = display.selectionEnd;
             const val = display.value;
@@ -2303,7 +2279,6 @@
         }
 
         function calculate() {
-            playClickSound();
             let rawInput = display.value;
             if (!rawInput) return;
 
@@ -2384,7 +2359,6 @@
         }
 
         function toggleHelpPanel() {
-            playClickSound();
             const helpPanel = document.getElementById('helpPanel');
             const floatingControls = document.getElementById('floatingControls');
             const toggleText = document.getElementById('helpToggleText');
@@ -2453,9 +2427,6 @@
             if (autoCopyToggleEl) autoCopyToggleEl.checked = isAutoCopyEnabled;
             if (macButtonsToggleEl) macButtonsToggleEl.checked = isMacButtons;
 
-            const soundToggleEl = document.getElementById('soundToggle');
-            if (soundToggleEl) soundToggleEl.checked = isSoundEnabled;
-
             applySettings();
         });
 
@@ -2472,20 +2443,17 @@
 
         // Global Event Handlers for Settings (must be global for onclick)
         function toggleMacButtons(checkbox) {
-            playClickSound();
             isMacButtons = checkbox.checked;
             localStorage.setItem('calcMacButtons', JSON.stringify(isMacButtons));
             applySettings();
         }
 
         function toggleAutoCopy(checkbox) {
-            playClickSound();
             isAutoCopyEnabled = checkbox.checked;
             localStorage.setItem('calcAutoCopy', JSON.stringify(isAutoCopyEnabled));
         }
 
         function toggleSettingsModal() {
-            playClickSound();
             const modal = document.getElementById('settingsModal');
             const overlay = document.getElementById('modalOverlay');
             modal.classList.toggle('hidden');
@@ -2493,7 +2461,6 @@
         }
 
         function hardRefresh() {
-            playClickSound();
             // Factory Reset Logic
             if (confirm("This will clear ALL saved data (Partners, Settings) to fix bugs and download the latest version.\n\nContinue?")) {
                 localStorage.clear();
@@ -2540,49 +2507,6 @@
             if (isAutoCopyEnabled) copyToClipboard(display.value);
         });
 
-        // --- Audio Feedback Logic ---
-        let isSoundEnabled = JSON.parse(localStorage.getItem('calcSound')) || false;
-        let audioCtx = null;
-
-        function toggleSound(checkbox) {
-            isSoundEnabled = checkbox.checked;
-            localStorage.setItem('calcSound', JSON.stringify(isSoundEnabled));
-
-            // Init AudioContext on user interaction if needed (mobile browsers block auto-start)
-            if (isSoundEnabled && !audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-
-        function playClickSound() {
-            if (!isSoundEnabled) return;
-
-            // Lazy init AudioContext
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-
-            // Create Oscillator and Gain Node
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            // Sound Profile: Soft Mechanical Click
-            // Triangle wave, fixed frequency (no slide)
-            oscillator.type = 'triangle';
-            oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-
-            // Envelope: Instant attack, exponential decay
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); // Volume
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.05);
-        }
-        // --- End Audio Feedback ---
-
         // --- Pro Features Logic ---
 
         let isProFeaturesEnabled = JSON.parse(localStorage.getItem('calcProFeatures')) || false;
@@ -2592,7 +2516,6 @@
         let isBtcLocked = JSON.parse(localStorage.getItem('calcBtcLock')) || false;
 
         function toggleProFeatures(checkbox) {
-            playClickSound();
             isProFeaturesEnabled = checkbox.checked;
             localStorage.setItem('calcProFeatures', JSON.stringify(isProFeaturesEnabled));
             applyProFeatures();
@@ -2663,7 +2586,6 @@
 
         // Quick Fees
         function applyQuickFee(percent) {
-            playClickSound();
             let currentVal = parseFloat(display.value);
             if (isNaN(currentVal)) return;
             let result = currentVal * (1 + percent / 100);
@@ -2675,7 +2597,6 @@
 
         // Delta Operator Logic
         function toggleDeltaMode() {
-            playClickSound();
             // New Behavior: Insert 'Δ' Symbol
             inputSymbol('Δ');
         }
@@ -2683,32 +2604,6 @@
         // Override Calculate for Delta Operator
         const originalCalculate = calculate;
         calculate = function () {
-            // No playClickSound here because originalCalculate or this wrapper is called by the button which already triggers sound via button click or keydown?
-            // Wait, calculate() is called by the '=' button.
-            // If we add playClickSound to the original calculate function, we might double play if we add it here too.
-            // But wait, the original calculate definition ABOVE (line 2280) has playClickSound added.
-            // So when this wrapper calls originalCalculate(), it will play sound.
-            // However, this wrapper itself might be called.
-            // Let's NOT add playClickSound here to avoid double hits if logic flows through.
-            // Actually, better safe: the user clicks '=', which calls calculate().
-            // If calculate is overridden, THIS function is called.
-            // If we don't play sound here, and we don't call originalCalculate immediately...
-            // Logic below:
-
-            // We should play sound here IF we don't call originalCalculate inside.
-            // But wait, 'calculate' is replaced. The '=' button calls THIS function.
-            // If we want sound on '=', we need playClickSound() here.
-            // if we call originalCalculate(), that ALREADY has playClickSound() at the start (from previous edit).
-            // So we only need to play it if we DON'T call originalCalculate.
-
-            // actually, simpler: The previous edit attached playClickSound to the *original* calculate function body.
-            // This replacement happens *after* that definition.
-            // So 'originalCalculate' refers to the version WITH the sound.
-            // So if we call originalCalculate(), sound plays.
-            // If we do the custom Delta logic, we need to play sound manually.
-
-            playClickSound();
-
             let val = display.value;
             if (val.includes('Δ')) {
                 // Parse: Left Δ Right
@@ -2882,7 +2777,6 @@
         let isPotatoMode = JSON.parse(localStorage.getItem('calcPotatoMode')) || false;
 
         function togglePotatoMode(checkbox) {
-            playClickSound();
             isPotatoMode = checkbox.checked;
             localStorage.setItem('calcPotatoMode', JSON.stringify(isPotatoMode));
             applyPotatoMode();
@@ -2948,19 +2842,6 @@
         // --- Global Hotkey Management ---
         // --- Global Hotkey Management ---
         document.addEventListener('keydown', (e) => {
-            // Play Audio on any valid interaction (Numbers, Operators, hotkeys)
-            // But exclude if Ctrl/Meta is pressed (shortcuts)
-            if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-                const validKeys = [
-                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                    '.', ',', '+', '-', '*', '/', '%', '=', 'Enter', 'Backspace', 'Escape',
-                    'd', 'p', 'o', 'h', 'D', 'P', 'O', 'H', 'y', 'Y', 'm', 'M'
-                ];
-                if (validKeys.includes(e.key)) {
-                    playClickSound();
-                }
-            }
-
             const code = e.code;
             const target = e.target;
 
@@ -3372,3 +3253,4 @@
 </body>
 
 </html>
+
