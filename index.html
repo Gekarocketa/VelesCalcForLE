@@ -2370,8 +2370,11 @@
         }
 
         function hardRefresh() {
-            // Force reload by appending/updating timestamp
-            window.location.href = window.location.pathname + '?t=' + new Date().getTime();
+            // Aggressive Force Update
+            const url = new URL(window.location.href);
+            url.searchParams.set('v', Date.now()); // Add unique version param
+            window.history.replaceState(null, null, url); // Update URL without reloading yet
+            window.location.reload(true); // Force reload from server
         }
         // -- End Settings State --
 
@@ -2743,6 +2746,13 @@
         document.addEventListener('keydown', (e) => {
             const code = e.code;
             const target = e.target;
+            // 1. PRIORITY: Enter -> Calculate (Always)
+            if (code === 'Enter') {
+                e.preventDefault();
+                calculate();
+                return;
+            }
+
             const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
             const isContentEditable = target.isContentEditable;
 
@@ -2755,15 +2765,6 @@
                 if (!isTyping || target.id === 'display') {
                     e.preventDefault();
                     clearDisplay();
-                }
-                return;
-            }
-
-            // Enter -> Calculate
-            if (code === 'Enter') {
-                if (!isTyping || target.id === 'display') {
-                    e.preventDefault();
-                    calculate();
                 }
                 return;
             }
@@ -3091,6 +3092,9 @@
         );
     </script>
 
+    <div class="version-label"
+        style="position: fixed; top: 10px; right: 10px; color: var(--text-color); opacity: 0.1; font-size: 0.8rem; pointer-events: none; z-index: 9999;">
+        v2.0</div>
 </body>
 
 </html>
