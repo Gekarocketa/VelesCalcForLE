@@ -459,7 +459,7 @@
         /* Copy Tooltip */
         .copy-tooltip {
             position: absolute;
-            top: -40px;
+            top: -70px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(30, 30, 30, 0.9);
@@ -495,7 +495,7 @@
             padding: 0 15px 10px 15px;
             font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.2s, font-size 0.1s ease;
         }
 
         #display:focus {
@@ -2144,6 +2144,31 @@
             }, 0);
         }
 
+        // --- Font Scaling & Undo Logic ---
+        let lastDisplayState = '';
+
+        function adjustFontSize() {
+            const len = display.value.length;
+            let baseSize = 1.5;
+            let newSize = baseSize;
+
+            if (len > 36) {
+                // New formula: start shrinking after 36 chars
+                newSize = Math.max(0.8, baseSize - (len - 36) * 0.03);
+            }
+            display.style.fontSize = `${newSize}rem`;
+        }
+
+        function showTooltip(text) {
+            const originalText = tooltip.textContent;
+            tooltip.textContent = text;
+            tooltip.classList.add('visible');
+            setTimeout(() => {
+                tooltip.classList.remove('visible');
+                setTimeout(() => tooltip.textContent = originalText, 200);
+            }, 1000);
+        }
+
         display.addEventListener('keydown', function (e) {
             if (e.key === 'Backspace') {
                 e.preventDefault();
@@ -2184,11 +2209,14 @@
             display.focus();
             const newPos = start + symbol.length;
             display.setSelectionRange(newPos, newPos);
+            adjustFontSize();
         }
 
         function clearDisplay() {
             playSound('action'); // Sound Hook
+            lastDisplayState = display.value; // Save State for Undo
             display.value = '';
+            adjustFontSize();
             focusAndMoveCursorToEnd();
         }
 
@@ -2214,7 +2242,9 @@
                 display.focus();
                 display.setSelectionRange(start - 1, start - 1);
             }
+            adjustFontSize();
         }
+
 
         function parseCryptoNumber(numStr) {
             // 1. Remove all spaces (1 000 -> 1000)
@@ -2293,6 +2323,9 @@
             let rawInput = display.value;
             if (!rawInput) return;
 
+            // Save state before calc
+            lastDisplayState = rawInput;
+
             let expr = rawInput.replace(/÷/g, '/').replace(/×/g, '*');
             let tokens = expr.split(/([+\-*/%()])/);
             let cleanExpression = tokens.map(token => parseCryptoNumber(token)).join('');
@@ -2356,6 +2389,7 @@
                 addToHistory(rawInput, formattedResult);
 
                 display.value = formattedResult;
+                adjustFontSize();
                 focusAndMoveCursorToEnd();
             } catch (e) {
                 const originalVal = display.value;
@@ -2691,8 +2725,8 @@
 
         // Delta Operator Logic
         function toggleDeltaMode() {
-            // New Behavior: Insert 'Δ' Symbol
-            inputSymbol('Δ');
+            // New Behavior: Insert ' Δ ' Symbol (with spaces)
+            inputSymbol(' Δ ');
         }
 
         // Override Calculate for Delta Operator
@@ -3001,6 +3035,20 @@
                 return;
             }
 
+            // Undo (Ctrl+Z)
+            if ((e.ctrlKey || e.metaKey) && code === 'KeyZ') {
+                e.preventDefault();
+                if (lastDisplayState !== null) {
+                    const temp = display.value;
+                    display.value = lastDisplayState;
+                    lastDisplayState = temp; // Allow redo-toggle
+                    adjustFontSize();
+                    showTooltip('Undone');
+                    playSound('ui');
+                }
+                return;
+            }
+
             // Shortcut Safety:
             // Stop here if any modifier is held (Ctrl/Alt/Meta). 
             // This prevents "Type-to-Focus" from blocking browser shortcuts (e.g. Ctrl+R, Ctrl+Shift+I).
@@ -3016,7 +3064,7 @@
                 if (isTyping && target.id !== 'display') return;
 
                 e.preventDefault();
-                inputSymbol('Δ');
+                inputSymbol(' Δ '); // Add spaces for better selection
                 playSound('ui'); // Sound Hook (Delta)
                 return;
             }
@@ -3160,6 +3208,7 @@
 
             // Insert at cursor
             inputSymbol(cleanText);
+            adjustFontSize();
         });
 
         // --- Import / Export Logic ---
