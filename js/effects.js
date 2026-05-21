@@ -1,0 +1,451 @@
+// --- Configuration: Birthday List ---
+const TEAM_BIRTHDAYS = [
+    { name: "Lucky", date: "09.04" },
+    { name: "Veles", date: "06.04" },
+    { name: "Koffi", date: "14.11" },
+
+];
+
+const RANDOM_GREETINGS = [
+    "Wake up,", "Time to cook,", "Lets go,", "Focus,", "Big moves,", "Hello,", "Greetings,", "Good vibes,", "Crypto King,", "Arbitrage God,",
+    "Stay sharp,", "Money moves,", "Grind time,", "Lets build,", "Stay hungry,", "Keep pushing,", "Make it happen,", "Level up,", "Be great,", "Dream big,",
+    "Work smart,", "Stay humble,", "Be kind,", "Good morning,", "Rise & shine,", "Lets win,", "No limits,", "Stay focused,", "Keep going,", "Never settle,",
+    "You got this,", "Believe,", "Execute,", "Dominate,", "Crush it,", "Lets trade,", "Market open,", "New highs,", "Stay green,", "HODL strong,",
+    "To the moon,", "Diamond hands,", "Smart money,", "Alpha state,", "Flow state,", "Be legendary,", "Create value,", "Solve problems,", "Think big,", "Action time,",
+    "Поехали,", "Тихо, я считаю,", "Зара буде профіт,", "Рахуй, не гадай,", "Все по плану? ", "Шо ти дядя ? "
+];
+
+
+// --- Event Wallpapers (Auto-Applied based on Active Effect) Заготовленные обои для сезонов ---
+const EVENT_WALLPAPERS = {
+    'snow': { url: 'https://png.klev.club/uploads/posts/2024-06/png-klev-club-ntb1-p-effekt-zamorozki-png-25.png', dimming: 90 },
+    'hearts': { url: 'https://cliply.co/wp-content/uploads/2019/02/371901360_HEART_TUNNEL_1x1_400px.gif', dimming: 70 },
+    'sakura': { url: 'https://i.pinimg.com/originals/ec/9c/68/ec9c6844d3f505144fe64a77bb62b809.gif', dimming: 80 },
+    'party': { url: 'https://i.pinimg.com/originals/00/e8/57/00e857a3c087bfcc085119e0e0aef8e8.gif', dimming: 65 },
+    'none': { url: '', dimming: 100 }
+};
+
+// --- Event Colors (Dynamic UI Theming) ---
+const EVENT_COLORS = {
+    'snow': { primary: '#3A7DFF', secondary: '#AEE2FF' },
+    'hearts': { primary: '#FF4D4D', secondary: '#FFB3B3' },
+    'sakura': { primary: '#FF85A2', secondary: '#FFD1DC' },
+    'party': { primary: '#FFD60A', secondary: '#FFF4A3' },
+    'none': { primary: '#3A7DFF', secondary: '#2CD4A7' }
+};
+
+// --- Seasonal & Birthday Visual Effects System ---
+
+// --- Helper: Check Today's Birthday ---
+function checkTodayBirthday() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const dateStr = `${day}.${month}`;
+
+    const birthday = TEAM_BIRTHDAYS.find(p => p.date === dateStr);
+    if (birthday) {
+        return { isBirthday: true, person: birthday };
+    }
+    return { isBirthday: false, person: null };
+}
+
+function getAutoSeason() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const dateStr = `${day}.${month}`;
+
+    const m = now.getMonth();
+    const d = now.getDate();
+    const h = now.getHours();
+
+    const birthday = TEAM_BIRTHDAYS.find(p => p.date === dateStr);
+    if (birthday) return { type: 'party', name: birthday.name };
+
+    // Valentine's
+    if (m === 1) {
+        if (d === 13 && h >= 18) return { type: 'hearts' };
+        if (d === 14) return { type: 'hearts' };
+        if (d === 15 && h < 6) return { type: 'hearts' };
+    }
+
+    // Winter
+    if (m === 11 || m === 0 || m === 1) return { type: 'snow' };
+    // Spring
+    if (m === 2 || m === 3) return { type: 'sakura' };
+
+    return { type: 'none' };
+}
+
+
+// FIX: Sync Dimming only if forced (new selection) or first run without stored data
+function syncDimmingToPreset(effect, force = false) {
+    // If user has a custom wallpaper, never override opacity
+    const customWallpaper = localStorage.getItem('calcWallpaper');
+    if (customWallpaper) return;
+
+    // Check if we are actually switching effects or just reloading
+    const lastEffect = localStorage.getItem('calcLastAppliedEffect');
+
+    // Если эффект тот же, что и был, и это не принудительный сброс (force) — не трогаем настройки юзера
+    if (!force && lastEffect === effect) {
+        return;
+    }
+
+    const preset = EVENT_WALLPAPERS[effect];
+    if (preset && typeof preset.dimming !== 'undefined') {
+        window.dimmingLevel = preset.dimming;
+
+        // Update UI
+        const slider = document.getElementById('dimmingSlider');
+        const label = document.getElementById('dimmingValue');
+        if (slider) slider.value = window.dimmingLevel;
+        if (label) label.textContent = window.dimmingLevel + '%';
+
+        // Apply immediately
+        const overlay = document.querySelector('#bg-layer .overlay');
+        if (overlay) overlay.style.opacity = window.dimmingLevel / 100;
+
+        // Save
+        localStorage.setItem('calcDimming', window.dimmingLevel);
+    }
+}
+
+
+function updateWallpaper(currentEffect = 'none') {
+    const bgLayer = document.getElementById('bg-layer');
+    const overlay = document.querySelector('#bg-layer .overlay');
+
+    if (!bgLayer) return;
+
+    if (window.isPotatoMode) {
+        bgLayer.style.backgroundImage = 'none';
+        if (overlay) overlay.style.opacity = 0;
+        return;
+    }
+
+    let backgroundUrl = '';
+
+    if (window.wallpaperUrl && window.wallpaperUrl.trim() !== '') {
+        backgroundUrl = window.wallpaperUrl;
+    } else if (currentEffect !== 'none') {
+        const eventWallpaper = EVENT_WALLPAPERS[currentEffect];
+        if (eventWallpaper && eventWallpaper.url) {
+            backgroundUrl = eventWallpaper.url;
+        }
+    }
+
+    if (backgroundUrl) {
+        bgLayer.style.backgroundImage = `url('${backgroundUrl}')`;
+    } else {
+        bgLayer.style.backgroundImage = 'none';
+    }
+
+    // Ensure opacity is applied
+    if (overlay) {
+        overlay.style.opacity = (window.dimmingLevel || 0) / 100;
+    }
+}
+
+function updateDimming() {
+    const overlay = document.querySelector('#bg-layer .overlay');
+    const valueDisplay = document.getElementById('dimmingValue');
+    if (overlay) overlay.style.opacity = window.dimmingLevel / 100;
+    if (valueDisplay) valueDisplay.textContent = `${window.dimmingLevel}%`;
+}
+
+
+// Helper: Detect current active visual effect
+function getCurrentEffect() {
+    // Simplified checker for internal use
+    const auto = getAutoSeason();
+    return auto.type;
+}
+
+function getEffectFromSettings() {
+    const savedPreference = localStorage.getItem('calcSeasonEffect') || 'auto';
+    const birthdayCheck = checkTodayBirthday();
+
+    // Birthday overrides manual "Off" check logic handled in applyVisualEffects
+    if (birthdayCheck.isBirthday && savedPreference !== 'none') {
+        return 'party';
+    }
+
+    if (savedPreference !== 'auto') {
+        return savedPreference;
+    }
+    return getCurrentEffect();
+}
+
+function clearWallpaper() {
+    window.wallpaperUrl = '';
+    localStorage.removeItem('calcWallpaper');
+    const urlInput = document.getElementById('wallpaperUrl');
+    if (urlInput) urlInput.value = '';
+
+    // Re-apply current effect (force sync dimming because custom WP removed)
+    const currentEffect = getEffectFromSettings();
+    syncDimmingToPreset(currentEffect, true); // Force reset dimming
+    updateWallpaper(currentEffect);
+    playSound('ui');
+}
+
+// Called when user changes dropdown
+function toggleVisualEffects(select) {
+    playSound('ui');
+    window.isVisualEffectsEnabled = select.value;
+    localStorage.setItem('calcSeasonEffect', window.isVisualEffectsEnabled);
+
+    // Force apply with sync because user explicitly changed settings
+    applyVisualEffects(true);
+}
+
+// FIX: Added 'forceSync' parameter
+function applyVisualEffects(forceSync = false) {
+    const titleEl = document.querySelector('.app-title');
+    const select = document.getElementById('seasonSelect');
+
+    if (select) select.value = window.isVisualEffectsEnabled;
+
+    // Cleanup
+    if (window.particlesInterval) clearInterval(window.particlesInterval);
+    const existingHat = document.querySelector('.seasonal-hat');
+    if (existingHat) existingHat.remove();
+    createParticles('none'); // Clear particles
+
+    // 1. Check "None"
+    if (window.isVisualEffectsEnabled === 'none') {
+        updateUserGreeting();
+        syncDimmingToPreset('none', forceSync);
+        updateWallpaper('none');
+        updateThemeColors('none');
+        localStorage.setItem('calcLastAppliedEffect', 'none');
+        return;
+    }
+
+    // 2. Determine Mode
+    const birthdayCheck = checkTodayBirthday();
+    let mode = window.isVisualEffectsEnabled;
+
+    // СБРОС: Сначала всегда убираем класс дня рождения
+    document.body.classList.remove('birthday-active');
+
+    if (birthdayCheck.isBirthday && mode !== 'none') {
+        mode = 'party';
+        document.body.classList.add('birthday-active'); // Активируем золотые кнопки
+
+        // --- ЭФФЕКТНАЯ АНИМАЦИЯ КНОПОК ---
+        // Запускаем только если это свежая загрузка или принудительный выбор
+        const buttons = document.querySelectorAll('.calculator button');
+        buttons.forEach((btn, index) => {
+            // Очищаем старые классы анимации, если они были
+            btn.classList.remove('party-pop');
+
+            // Запускаем анимацию с задержкой (эффект волны)
+            setTimeout(() => {
+                btn.classList.add('party-pop');
+            }, index * 30); // Каждая кнопка прыгает через 30мс после предыдущей
+        });
+
+        // Устанавливаем заголовок
+        if (titleEl) {
+            titleEl.innerHTML = `<span style="color:#FFD60A">${birthdayCheck.person.name}</span> <span style="color:var(--text-color)">Happy Birthday! 🥳</span>`;
+        }
+    }
+
+    // 3. Sync Dimming (Smart)
+    syncDimmingToPreset(mode, forceSync);
+
+    // Save current effect as applied
+    localStorage.setItem('calcLastAppliedEffect', mode);
+
+    if (mode === 'none') {
+        updateWallpaper('none');
+        return;
+    }
+
+    // 4. Apply Visuals
+    // Hat Logic
+    let hatType = '';
+    switch (mode) {
+        case 'party': hatType = 'party'; break;
+        case 'snow': hatType = 'santa'; break;
+        case 'hearts': hatType = 'heart'; break;
+    }
+
+    if (hatType) {
+        const letterL = document.querySelector('.brand-letter');
+        if (letterL) {
+            const hat = document.createElement('div');
+            hat.className = 'seasonal-hat';
+            hat.style.position = 'absolute';
+            hat.style.zIndex = '10';
+            hat.style.filter = 'drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5))';
+
+            if (hatType === 'santa') {
+                hat.innerHTML = '🎅';
+                hat.style.top = '-10px'; hat.style.left = '-60px'; hat.style.fontSize = '2.5rem';
+                hat.style.transform = 'rotate(-20deg)'; hat.style.animation = 'hatBounce 2s infinite ease-in-out';
+            } else if (hatType === 'party') {
+                hat.innerHTML = '🥳';
+                hat.style.top = '-18px'; hat.style.left = '-55px'; hat.style.fontSize = '2.5rem';
+                hat.style.transform = 'rotate(-10deg)'; hat.style.animation = 'hatBounce 2s infinite ease-in-out';
+            } else if (hatType === 'heart') {
+                hat.innerHTML = '💘';
+                hat.style.top = '-15px'; hat.style.left = '-35px'; hat.style.fontSize = '1.5rem';
+                hat.style.animation = 'hatBounce 2s infinite ease-in-out';
+            }
+            letterL.appendChild(hat);
+        }
+    }
+
+    // Particles
+    // Check localStorage direct to avoid initialization lag issues
+    const potato = localStorage.getItem('calcPotatoMode') === 'true';
+    if (!potato) {
+        createParticles(mode);
+    }
+
+    updateWallpaper(mode);
+    updateThemeColors(mode);
+    updateDimming(); // Ensure slider value is respected visually
+}
+
+function toggleParticles(checkbox) {
+    window.isParticlesEnabled = checkbox.checked;
+    localStorage.setItem('calcParticlesEnabled', window.isParticlesEnabled);
+    playSound('ui');
+
+    if (window.isParticlesEnabled) {
+        const effect = getEffectFromSettings();
+        applyVisualEffects(false);
+    } else {
+        // Очищаем ОБА новых контейнера
+        const f = document.getElementById('particleContainerFront');
+        const b = document.getElementById('particleContainerBack');
+        if (f) f.innerHTML = '';
+        if (b) b.innerHTML = '';
+    }
+}
+
+function applyCustomTheme() {
+    const primary = document.getElementById('primaryColorPicker').value;
+    const secondary = document.getElementById('secondaryColorPicker').value;
+    const emojis = document.getElementById('particleEmojiInput').value;
+
+    // Сохраняем в localStorage
+    localStorage.setItem('customTheme', JSON.stringify({ primary, secondary, emojis }));
+
+    // Применяем
+    updateThemeColors('custom'); // Новый режим!
+    createParticles('custom');
+
+    // Важно: переключаем селектор в "Off", чтобы юзер понимал, что активна кастомная тема
+    const select = document.getElementById('seasonSelect');
+    if (select) select.value = 'none';
+    localStorage.setItem('calcSeasonEffect', 'none');
+}
+
+function resetToDefaultTheme() {
+    localStorage.removeItem('customTheme');
+    updateThemeColors('none'); // Сбрасываем цвета на дефолт
+    createParticles('none');
+
+    // Восстанавливаем значения в пикерах
+    document.getElementById('primaryColorPicker').value = '#3A7DFF';
+    document.getElementById('secondaryColorPicker').value = '#2CD4A7';
+    document.getElementById('particleEmojiInput').value = '';
+}
+
+
+function updateThemeColors(effect) {
+    let colors;
+    if (effect === 'custom') {
+        const custom = JSON.parse(localStorage.getItem('customTheme'));
+        // ЗАЩИТА: Проверяем, что кастомная тема существует, иначе используем дефолт
+        if (custom && custom.primary && custom.secondary) {
+            colors = { primary: custom.primary, secondary: custom.secondary };
+        } else {
+            colors = EVENT_COLORS['none']; // Запасной вариант
+        }
+    } else {
+        colors = EVENT_COLORS[effect] || EVENT_COLORS['none'];
+    }
+    document.documentElement.style.setProperty('--primary-accent', colors.primary);
+    document.documentElement.style.setProperty('--secondary-accent', colors.secondary);
+}
+
+function createParticles(type) {
+    const containerFront = document.getElementById('particleContainerFront');
+    const containerBack = document.getElementById('particleContainerBack');
+
+    if (containerFront) containerFront.innerHTML = '';
+    if (containerBack) containerBack.innerHTML = '';
+
+    if (type === 'none' || !window.isParticlesEnabled || window.isPotatoMode) return;
+
+    // ОБЪЯВЛЯЕМ ОДИН РАЗ
+    let particles = [];
+
+    // ЗАПОЛНЯЕМ МАССИВ В ЗАВИСИМОСТИ ОТ ТЕМЫ
+    if (type === 'custom') {
+        const custom = JSON.parse(localStorage.getItem('customTheme'));
+        if (custom && custom.emojis && custom.emojis.trim() !== '') {
+            particles = custom.emojis.split(',');
+        }
+    } else if (type === 'snow') {
+        particles = ['❄', '❅'];
+    } else if (type === 'hearts') {
+        particles = ['💖', '💕', '💘'];
+    } else if (type === 'sakura') {
+        particles = ['🌸', '💮', '🌺'];
+    } else if (type === 'party') {
+        particles = ['🎉', '✨', '🎈', '🥳'];
+    }
+
+    // Если в итоге массив пуст (например, кастомные эмодзи не заданы) — выходим
+    if (particles.length === 0) return;
+
+    const globalAlpha = window.particleOpacity / 100;
+
+    for (let i = 0; i < 50; i++) {
+        const flake = document.createElement('div');
+        flake.classList.add('particle');
+        // Берем случайный эмодзи из нашего массива
+        flake.textContent = particles[Math.floor(Math.random() * particles.length)];
+
+        flake.style.left = Math.random() * 100 + 'vw';
+        flake.style.animationDuration = (Math.random() * 5 + 3) + 's';
+        flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+        flake.style.animationDelay = Math.random() * 5 + 's';
+
+        const baseOpacity = Math.random() * 0.7 + 0.3;
+        flake.dataset.baseOpacity = baseOpacity;
+        flake.style.opacity = baseOpacity * globalAlpha;
+
+        if (Math.random() < 0.7) {
+            flake.style.filter = 'blur(1px)';
+            flake.dataset.isBack = "true";
+            flake.style.opacity = (baseOpacity * globalAlpha) * 0.5;
+            if (containerBack) containerBack.appendChild(flake);
+        } else {
+            if (containerFront) containerFront.appendChild(flake);
+        }
+    }
+}
+function updateActiveParticlesOpacity() {
+    const particles = document.querySelectorAll('.particle');
+    const globalAlpha = window.particleOpacity / 100;
+
+    particles.forEach(p => {
+        const base = parseFloat(p.dataset.baseOpacity) || 0.8;
+        const isBack = p.dataset.isBack === "true";
+
+        // Пересчитываем: база * положение в ползунке * (0.5 если частица сзади)
+        let finalOpacity = base * globalAlpha;
+        if (isBack) finalOpacity *= 0.5;
+
+        p.style.opacity = finalOpacity;
+    });
+}
